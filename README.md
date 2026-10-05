@@ -40,7 +40,7 @@ The guide and derived `tools/fixtures/house` scan geometry are included with the
 
 The source and guide target a BetaFPV Meteor65 Pro II / DJI O4, DJI Goggles 3, and RadioMaster TX15 using EdgeTX, ELRS and Betaflight ANGLE mode. This is a development target, not a verified compatibility certification. See the local setup guide before configuring hardware. `radio/SCRIPTS/MIXES/aibrg.lua` is the bridge source; **no personal radio/model settings are included**. Third-party device firmware and proprietary DJI/Betaflight configuration tools are not redistributed.
 
-The bridge's manual axis takeover, AI switch, heartbeat timeout and ANGLE behavior are retained. The app does not arm a real drone. **Stop/Escape** ends the mission; **Land/L** requests landing. These are software controls, not substitutes for a pilot or an independent disarm procedure. Hardware must be checked props-off before any actual flight.
+The bridge's manual axis takeover, AI switch, heartbeat timeout and ANGLE behavior are retained. The app does not arm a real drone. **Stop/Escape** ends the mission; **Land/L** requests landing. These are software controls, not substitutes for a pilot or an independent disarm procedure. Hardware must be checked props-off before any actual flight. A stale-link AI-switch engagement hazard was reproduced in a mock; see SECURITY.md. Do not enable AI without a fresh verified link.
 
 ## Optional Claude and privacy
 
