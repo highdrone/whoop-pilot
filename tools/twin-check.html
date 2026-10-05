@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twin check</title>
+<style>
+  body{font:13px ui-monospace,monospace;background:#111;color:#ddd;padding:12px;margin:0}
+  h3{margin:4px 0 10px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin-bottom:12px}
+  figure{margin:0;display:table} figcaption{display:table-caption;caption-side:bottom;color:#9ab;margin-top:3px}
+  canvas{display:block;background:#000;max-width:100%}
+  table{border-collapse:collapse} td{padding:2px 10px 2px 0;vertical-align:top}
+  .pass{color:#6d6} .fail{color:#f66} .dim{color:#888}
+  pre{white-space:pre-wrap;color:#aaa}
+</style>
+<h3>Splat twin check</h3>
+<p class="dim" id="usage">Query: ?capture=URL of a SiteSpec project folder, or ?splat= &amp;scene= &amp;rooms= &amp;site= &amp;roomsAuto= &amp;photo= &amp;trainer=;
+optional &amp;key= (held-out camera) &amp;x= &amp;y= &amp;yaw= (drone pose, deg) &amp;bench=0 (skip timing) &amp;det=URL of RF-DETR-N's model.onnx, or app
+(the app's cached copy; runs the detector on the actors) &amp;only=live,psnr,wall,occlusion,lens,depth,create,det,bench.
+The default drone position and the wall and hiding scenes are placed for the reference capture: for another house pass &amp;x=&amp;y= (a clear spot
+with about 3 m free ahead) and &amp;wall=0.</p>
+<table id="checks"></table>
+<div class="row">
+  <figure><canvas id="fish" width="640" height="480"></canvas><figcaption id="fishCap">drone camera</figcaption></figure>
+  <figure><canvas id="wall" width="640" height="480"></canvas><figcaption id="wallCap">actors at a wall</figcaption></figure>
+</div>
+<div class="row">
+  <figure><canvas id="pin" width="320" height="320"></canvas><figcaption id="pinCap">twin, pinhole at the capture pose</figcaption></figure>
+  <figure><canvas id="photo" width="320" height="320"></canvas><figcaption>held-out photo</figcaption></figure>
+  <figure><canvas id="trainer" width="320" height="320"></canvas><figcaption>trainer render</figcaption></figure>
+  <figure><canvas id="depth" width="320" height="240"></canvas><figcaption id="depthCap">expected depth</figcaption></figure>
+</div>
+<div class="row">
+  <figure><canvas id="det" width="640" height="480"></canvas><figcaption id="detCap">detector (&amp;det=)</figcaption></figure>
+</div>
+<pre id="log"></pre>
+<script type="module" src="./twin-check.js"></script>

@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Whoop Pilot — Field Guide</title>
+<style>
+@page { size: 8.5in 11in; margin: 0 }
+:root {
+  --ink: #15171d; --ink2: #3b404c; --mute: #707684; --paper: #fbf8f2; --card: #ffffff; --line: #e8e1d4;
+  --amber: #d97706; --amber2: #f59e0b; --sun: #fde68a; --rust: #9a3412; --navy: #0e1525; --navy2: #18233a;
+  --green: #15803d; --pink: #db2777; --sky: #0369a1;
+}
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact }
+html, body { margin: 0; background: #8a8a8a }
+body { font: 10.2pt/1.47 -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, sans-serif; color: var(--ink) }
+.page { width: 8.5in; height: 11in; position: relative; overflow: hidden; background: var(--paper);
+  padding: 0.6in 0.65in 0.8in; break-after: page; page-break-after: always }
+.page:last-child { break-after: auto; page-break-after: auto }
+h1, h2, h3, .kicker, .num, .pin, .big { font-family: "Avenir Next", Avenir, -apple-system, sans-serif }
+h2 { font-size: 27pt; font-weight: 700; letter-spacing: -0.015em; line-height: 1.04; margin: 0.08in 0 0.12in }
+h3 { font-size: 12.5pt; font-weight: 700; margin: 0.16in 0 0.05in; letter-spacing: -0.005em }
+h3:first-child { margin-top: 0 }
+p { margin: 0 0 0.08in }
+.kicker { font-weight: 600; font-size: 8.4pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber) }
+.lede { font-size: 12pt; line-height: 1.45; color: var(--ink2); margin-bottom: 0.18in }
+.mute { color: var(--mute) }
+small, .small { font-size: 8.6pt }
+b, strong { font-weight: 650 }
+ul { margin: 0.02in 0 0.08in; padding-left: 1.1em }
+li { margin: 0 0 0.035in }
+kbd { font: 600 8pt/1 "SF Mono", Menlo, monospace; background: #fff; color: var(--ink); border: 1px solid #cbc2b1;
+  border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; white-space: nowrap }
+.ui { font-weight: 650; color: var(--rust) }
+.path { font-weight: 600; color: var(--ink) }
+.path i { font-style: normal; color: var(--amber); padding: 0 2px }
+
+.footer { position: absolute; left: 0.65in; right: 0.65in; bottom: 0.38in; display: flex; justify-content: space-between;
+  font-size: 7.8pt; color: var(--mute); border-top: 1px solid var(--line); padding-top: 6px; letter-spacing: 0.02em }
+.footer b { color: var(--ink2); font-weight: 600 }
+
+.shot { position: relative; border-radius: 9px; overflow: hidden; background: #fff;
+  box-shadow: 0 10px 26px rgba(14, 21, 37, 0.18), 0 0 0 1px rgba(14, 21, 37, 0.08) }
+.shot img { display: block; width: 100% }
+.cap { font-size: 8.4pt; color: var(--mute); margin: 7px 2px 0; line-height: 1.35 }
+.pin { position: absolute; width: 19px; height: 19px; margin: -9.5px 0 0 -9.5px; border-radius: 50%;
+  background: var(--amber2); color: #1b1203; font-weight: 800; font-size: 9pt; line-height: 19px; text-align: center;
+  box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0, 0, 0, 0.45) }
+
+.box { border-radius: 10px; padding: 11px 14px; background: var(--card); border: 1px solid var(--line) }
+.box h3 { margin-top: 0 }
+.safety { background: #fff3ea; border-color: #fdc9a3 }
+.safety .tag { background: var(--rust) }
+.tip { background: #eef7f0; border-color: #c3e6cd }
+.tip .tag { background: var(--green) }
+.note { background: #eef4fb; border-color: #c8dbef }
+.note .tag { background: var(--sky) }
+.tag { display: inline-block; color: #fff; font: 700 7.4pt/1 "Avenir Next", sans-serif; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 4px 7px 3px; border-radius: 4px; margin-bottom: 6px }
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.22in }
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.16in }
+.gap { height: 0.16in }
+
+.steps { list-style: none; padding: 0; margin: 0; counter-reset: s }
+.steps > li { counter-increment: s; position: relative; padding-left: 33px; margin: 0 0 0.085in }
+.steps > li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 23px; height: 23px; border-radius: 50%;
+  background: var(--navy); color: #fde68a; font: 700 9.5pt/23px "Avenir Next", sans-serif; text-align: center }
+.steps.amber > li::before { background: var(--amber2); color: #1b1203 }
+
+table { width: 100%; border-collapse: collapse; font-size: 9.2pt }
+th { text-align: left; font: 700 7.6pt/1.2 "Avenir Next", sans-serif; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--mute); padding: 6px 8px; border-bottom: 1.5px solid var(--ink) }
+td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top }
+tr:last-child td { border-bottom: 0 }
+td:first-child { font-weight: 600 }
+
+.legend { columns: 2; column-gap: 0.25in; font-size: 9pt; margin-top: 0.14in }
+.legend div { break-inside: avoid; display: flex; gap: 7px; margin: 0 0 5px; line-height: 1.32 }
+.legend .n { flex: none; width: 17px; height: 17px; border-radius: 50%; background: var(--amber2); color: #1b1203;
+  font: 800 8pt/17px "Avenir Next", sans-serif; text-align: center; margin-top: 1px }
+
+.chip { display: inline-block; font: 600 8pt/1 -apple-system, sans-serif; padding: 4px 7px; border-radius: 5px;
+  background: #1e2533; color: #fff; white-space: nowrap }
+.chip.ok { background: #1f6f43 } .chip.warn { background: #b45309 } .chip.bad { background: #9f1239 }
+
+/* cover */
+.cover { background: radial-gradient(120% 70% at 85% 18%, #3a2a10 0%, rgba(58, 42, 16, 0) 55%),
+  radial-gradient(90% 60% at 10% 100%, #1d2c4d 0%, rgba(29, 44, 77, 0) 60%), var(--navy); color: #f4efe6; padding: 0.75in 0.75in }
+.cover .kicker { color: var(--amber2) }
+.cover h1 { font-size: 64pt; line-height: 0.95; letter-spacing: -0.03em; margin: 0.22in 0 0.1in; font-weight: 700 }
+.cover h1 span { color: var(--amber2) }
+.cover .sub { font: 500 19pt/1.25 "Avenir Next", sans-serif; color: #e9dfcd; max-width: 5.6in }
+.cover .shot { position: absolute; left: 0.75in; right: 0.75in; top: 4.15in; transform: rotate(-2.2deg);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08) }
+.cover .bottom { position: absolute; left: 0.75in; right: 0.75in; bottom: 0.6in; display: flex; justify-content: space-between;
+  align-items: flex-end; font-size: 9pt; color: #b9b0a0; letter-spacing: 0.03em }
+.cover .bottom b { color: #f4efe6; font-weight: 600 }
+.drone { position: absolute; right: 0.72in; top: 0.62in; width: 1.25in; opacity: 0.95 }
+
+/* diagram */
+.flow { display: flex; align-items: center; gap: 8px; margin: 0.08in 0 0.04in }
+.node { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) }
+.node .big { font-size: 10.5pt; font-weight: 700; display: block; margin-bottom: 2px }
+.node small { color: var(--mute); line-height: 1.3; display: block }
+.node.hot { background: var(--navy); color: #fff; border-color: var(--navy) }
+.node.hot small { color: #c9c2b4 }
+.arrow { flex: none; color: var(--amber); font-weight: 800; font-size: 14pt }
+.flow-label { text-align: center; font-size: 8pt; color: var(--mute); margin-top: 2px }
+
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.14in }
+.trio .box { text-align: center; padding: 14px 12px }
+.trio .big { font-size: 22pt; font-weight: 800; color: var(--rust); display: block; line-height: 1.1 }
+
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.14in }
+.modes .box { padding: 12px 13px }
+.modes .box.on { border: 2px solid var(--amber2); background: #fffaf0 }
+.modes h3 { font-size: 12pt }
+
+.timeline { position: relative; padding-left: 0.42in }
+.timeline::before { content: ""; position: absolute; left: 0.15in; top: 6px; bottom: 6px; width: 2px; background: linear-gradient(var(--amber2), var(--navy)) }
+.stage { position: relative; margin-bottom: 0.13in }
+.stage .dot { position: absolute; left: -0.36in; top: 0; width: 0.27in; height: 0.27in; border-radius: 50%; background: var(--navy);
+  color: #fde68a; font: 800 9.5pt/0.27in "Avenir Next", sans-serif; text-align: center; box-shadow: 0 0 0 3px var(--paper) }
+.stage h3 { margin: 0 0 3px; font-size: 12pt }
+.stage .when { font: 600 7.6pt/1 "Avenir Next", sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber); margin-bottom: 4px }
+
+.phone { width: 1.95in; border-radius: 22px; padding: 7px; background: #111; box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35) }
+.phone img { display: block; width: 100%; border-radius: 16px }
+
+.ref { background: var(--navy); color: #efe9de; padding: 0.6in 0.65in }
+.ref h2 { color: #fff }
+.ref .kicker { color: var(--amber2) }
+.ref .box { background: var(--navy2); border-color: #2a3654; color: #e8e1d4 }
+.ref .box h3 { color: var(--amber2); font-size: 10.5pt; letter-spacing: 0.06em; text-transform: uppercase }
+.ref td { border-color: #2a3654 }
+.ref td:first-child { color: #fff }
+.ref kbd { background: #26314a; color: #fff; border-color: #44517a }
+.ref .footer { border-color: #2a3654; color: #8b93a8 }
+.ref .footer b { color: #c9c2b4 }
+
+.ok { position: relative; padding: 2px 0 2px 21px; line-height: 1.35 }
+.ok::before { content: "✓"; position: absolute; left: 0; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #dcefe2; color: #15803d; font-weight: 800; font-size: 8.5pt; line-height: 15px; text-align: center }
+.toc { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 0.3in; margin-top: 0.1in }
+.toc div { display: flex; align-items: baseline; gap: 8px; border-bottom: 1px dotted #cfc6b5; padding: 5px 0 4px }
+.toc .num { font-weight: 800; color: var(--amber); width: 22px }
+.toc .pg { margin-left: auto; color: var(--mute); font-size: 9pt }
+
+.page::before { content: "EXPERIMENTAL · SUPERVISED RESEARCH · NO FLIGHT-SAFETY CERTIFICATION"; position:absolute; top:0.18in; left:0.65in; right:0.65in; font-size:6.5pt; color:#866000; letter-spacing:.3px }
+.cover::before { color:#ffda73 }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ 1. COVER -->
+<section class="page cover">
+  <svg class="drone" viewBox="0 0 120 120" fill="none" stroke="#f59e0b" stroke-width="2.4">
+    <circle cx="28" cy="28" r="20"/><circle cx="92" cy="28" r="20"/><circle cx="28" cy="92" r="20"/><circle cx="92" cy="92" r="20"/>
+    <circle cx="28" cy="28" r="3" fill="#f59e0b"/><circle cx="92" cy="28" r="3" fill="#f59e0b"/><circle cx="28" cy="92" r="3" fill="#f59e0b"/><circle cx="92" cy="92" r="3" fill="#f59e0b"/>
+    <path d="M41 41 L52 52 M79 41 L68 52 M41 79 L52 68 M79 79 L68 68"/>
+    <rect x="48" y="46" width="24" height="28" rx="7" fill="#0e1525"/>
+    <circle cx="60" cy="53" r="4.5" fill="#f59e0b" stroke="none"/>
+  </svg>
+  <div class="kicker">The field guide</div>
+  <h1>Whoop<br><span>Pilot</span></h1>
+  <div class="sub">Experimental voice-assisted FPV research. Supervised use only; start in the simulator.</div>
+  <div class="shot"><img src="img/final-rehearsal-flight-desktop.png" alt=""></div>
+  <div class="bottom">
+    <div><b>BetaFPV Meteor65 Pro II (DJI O4)</b> · DJI Goggles 3 · RadioMaster TX15 · Mac + Chrome</div>
+    <div>October 2026</div>
+  </div>
+</section>
+
+<!-- ============================================================ 2. WHAT IT IS -->
+<section class="page">
+  <div class="kicker">Welcome</div>
+  <h2>What Whoop Pilot is</h2>
+  <p class="lede">Whoop Pilot is experimental software for supervised FPV research on a Mac. Say “find the cat”, “look in the bedroom”
+    or “go home”, and it plans a route through your house, steers around walls and furniture, and tells you what it saw.</p>
+
+  <div class="cols">
+    <div class="box tip">
+      <span class="tag">It can</span>
+      <ul>
+        <li>Understand plain speech (with Claude) or simple typed commands.</li>
+        <li>Fly <b>missions</b> in your house: go to a room, look in a room, find people, check on pets, patrol, return home.</li>
+        <li>Know where it is by matching its live video against the 3D scan of your house.</li>
+        <li>Notice things that changed since the scan (a new box, a closed door) and fly around them.</li>
+        <li>Remember every flight: where it went, who and what it saw.</li>
+        <li>Let you rehearse every mission first in a simulator of <i>your own</i> house.</li>
+      </ul>
+    </div>
+    <div class="box safety">
+      <span class="tag">It is not</span>
+      <ul>
+        <li><b>Not a security camera.</b> Each flight is a supervised sortie of about 3 minutes (the 480 mAh pack gives about 4).</li>
+        <li><b>It never arms the drone.</b> A person puts in the battery and arms with the radio.</li>
+        <li>Not hands-off: the Mac, radio and goggles stay on, and the app window must stay visible while it flies.</li>
+        <li>Not for places it hasn’t scanned: it only flies where your 3D scan has seen.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="margin-top:0.2in">Inside this guide</h3>
+  <div class="toc">
+    <div><span class="num">01</span>How it fits together &amp; safety<span class="pg">3</span></div>
+    <div><span class="num">08</span>The map and the 3D view<span class="pg">11</span></div>
+    <div><span class="num">02</span>One-time setup<span class="pg">4</span></div>
+    <div><span class="num">09</span>History, memory and changes<span class="pg">12</span></div>
+    <div><span class="num">03</span>A tour of the screen<span class="pg">5</span></div>
+    <div><span class="num">10</span>Ready to fly?<span class="pg">13</span></div>
+    <div><span class="num">04</span>Flying modes and talking to it<span class="pg">6</span></div>
+    <div><span class="num">11</span>Your first real flight<span class="pg">14</span></div>
+    <div><span class="num">05</span>Your house: import and 3D map<span class="pg">7</span></div>
+    <div><span class="num">12</span>When something is wrong<span class="pg">16</span></div>
+    <div><span class="num">06</span>Home pad and Claude’s survey<span class="pg">8</span></div>
+    <div><span class="num">13</span>Claude, cost and privacy<span class="pg">17</span></div>
+    <div><span class="num">07</span>Simulator, missions and the HUD<span class="pg">9</span></div>
+    <div><span class="num">14</span>Quick reference<span class="pg">18</span></div>
+  </div>
+
+  <div class="box note" style="margin-top:0.18in">
+    <span class="tag">The short version</span>
+    <p style="margin:0">Import your house → build the 3D map → set the home pad → rehearse in the simulator → record one flight by hand →
+      calibrate the camera and check it → measure braking → your first mission in <b>Co-pilot</b>. Page 14 walks you through it.</p>
+  </div>
+  <div class="footer"><span><b>Whoop Pilot</b> · Field guide</span><span>2</span></div>
+</section>
+
+<!-- ============================================================ 3. HOW IT FITS -->
+<section class="page">
+  <div class="kicker">01 · The big picture</div>
+  <h2>How it fits together</h2>
+  <p class="lede">Your Mac does the thinking. The radio does the flying. Your hands stay in charge.</p>
+
+  <div class="flow">
+    <div class="node"><span class="big">You</span><small>voice, keyboard or the mission buttons</small></div>
+    <div class="arrow">→</div>
+    <div class="node hot"><span class="big">Whoop Pilot</span><small>Chrome on your Mac: Claude, the house map, missions, safety</small></div>
+    <div class="arrow">→</div>
+    <div class="node"><span class="big">TX15 radio</span><small>USB-C cable · the bridge script, only while the AI switch is on</small></div>
+    <div class="arrow">→</div>
+    <div class="node"><span class="big">Meteor65</span><small>ELRS link · Betaflight in ANGLE mode</small></div>
+  </div>
+  <div class="flow" style="margin-top:6px">
+    <div class="node" style="flex:0.9"><span class="big">Meteor65 camera</span><small>DJI O4</small></div>
+    <div class="arrow">→</div>
+    <div class="node" style="flex:0.9"><span class="big">Goggles 3</span><small>you see what it sees</small></div>
+    <div class="arrow">→</div>
+    <div class="node hot" style="flex:1.2"><span class="big">start.command</span><small>the app’s small server reads the goggles’ live video over USB-C</small></div>
+    <div class="arrow">→</div>
+    <div class="node" style="flex:1"><span class="big">The app’s eyes</span><small>people, pets, position, depth</small></div>
+  </div>
+
+  <h3 style="margin-top:0.3in">Three ways to take over, any time</h3>
+  <div class="trio">
+    <div class="box"><span class="big">Any stick</span>Move a stick and that axis is yours again at once.</div>
+    <div class="box"><span class="big">AI switch</span><b>SD</b> on the TX15. Up = you fly. Down = the AI may fly.</div>
+    <div class="box"><span class="big">Stop</span>The red <b>Stop</b> button or <kbd>Esc</kbd>. <b>Land</b> or <kbd>L</kbd> to land.</div>
+  </div>
+
+  <div class="box safety" style="margin-top:0.22in">
+    <span class="tag">Safety rules</span>
+    <ul style="margin-bottom:0">
+      <li><b>The app never arms the drone</b>, and the radio script can’t. You arm with the radio’s own arm switch.</li>
+      <li>If the app goes quiet for 0.3 s, the radio script <b>fails safe</b>: sticks centre and the drone sinks slowly.</li>
+      <li>Keep the app window <b>visible</b>. Browsers slow hidden tabs, so a mission stops if you hide it.</li>
+      <li>The DJI O4 overheats after about <b>2.5 minutes on the ground</b> with the battery in. Don’t dawdle on the pad.</li>
+      <li>For the first flights, keep <b>people and pets out</b> of the rooms you fly in, and props away from faces.</li>
+      <li>The AI flies in <b>ANGLE (self-level) mode</b> only. The radio forces it while the AI switch is on.</li>
+    </ul>
+  </div>
+  <div class="footer"><span><b>01</b> · How it fits together</span><span>3</span></div>
+</section>
+
+<!-- ============================================================ 4. SETUP -->
+<section class="page">
+  <div class="kicker">02 · Do this once</div>
+  <h2>One-time setup</h2>
+  <p class="lede">About 20 minutes. Nothing to solder, nothing to buy. The full step-by-step is in the app: the <span class="ui">Setup guide ↗</span> link.</p>
+
+  <div class="cols">
+    <div>
+      <h3>1 · The radio (TX15)</h3>
+      <ol class="steps">
+        <li>Plug the TX15 into the Mac, choose <b>USB Storage</b>, and copy <b>aibrg.lua</b> into <span class="path">SCRIPTS<i>/</i>MIXES</span> on its SD card.</li>
+        <li><span class="path">SYS <i>→</i> Hardware <i>→</i> Serial ports <i>→</i> USB-VCP</span>: set it to <b>LUA</b>.</li>
+        <li>In your Meteor65 model: <span class="path">Model Settings <i>→</i> Enabled Features</span>, turn <b>Mixer Scripts</b> on.</li>
+        <li>Add <b>aibrg</b> on the Mixer Scripts page. Inputs: the model’s Ail/Ele/Thr/Rud, AI switch <b>SD</b>, push-to-talk <b>SF</b> (optional).</li>
+        <li>Add the four <b>REPL</b> mix lines for CH1–CH4 and the ANGLE line, as shown in the setup guide.</li>
+        <li><b>Bench check, props off:</b> SD up = everything as before. SD down with the app closed = sticks still work, flight mode jumps to ANGLE.</li>
+        <li>Plug USB-C into the Mac and choose <b>USB Serial (VCP)</b>.</li>
+      </ol>
+    </div>
+    <div>
+      <h3>2 · The video (Goggles 3)</h3>
+      <ol class="steps">
+        <li>Install Node.js once: <kbd>brew install node</kbd>.</li>
+        <li>Double-click <b>start.command</b>. Keep its window open: closing it stops Whoop Pilot. Chrome opens the app.</li>
+        <li>Goggles menu: <span class="path">Settings <i>→</i> About <i>→</i> OTG Wired Connection</span> <b>off</b>.</li>
+        <li><b>Share Liveview to Mobile Device via Wi-Fi</b> <b>on</b>. Despite its name, it also turns on the USB live view.</li>
+        <li>Connect the goggles’ USB-C port to the Mac with a <b>data</b> cable (charge-only cables won’t work).</li>
+        <li>Set the O4 camera to <b>4:3</b>.</li>
+        <li>In the app, choose <span class="ui">Real drone</span>. The video appears by itself.</li>
+      </ol>
+      <h3>3 · Betaflight / ELRS</h3>
+      <ul>
+        <li>A switch for <b>ANGLE</b> mode (or use the bridge’s ANGLE line).</li>
+        <li>ELRS telemetry ratio <b>1:8</b> or 1:4, then <b>Discover new sensors</b> once on the radio’s Telemetry page.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box note" style="margin-top:0.12in">
+    <span class="tag">Optional · Claude</span>
+    <p style="margin:0">Add an API key in <span class="path">Settings <i>→</i> Brain</span> for real language understanding and picture checks.
+      Without a key, a simple offline parser handles the basic commands and every mission still works. Your key stays in this browser
+      and calls go straight to Anthropic.</p>
+  </div>
+  <div class="footer"><span><b>02</b> · One-time setup</span><span>4</span></div>
+</section>
+
+<!-- ============================================================ 5. TOUR -->
+<section class="page">
+  <div class="kicker">03 · Find your way around</div>
+  <h2>A tour of the screen</h2>
+  <div class="shot" style="margin-top:0.08in">
+    <img src="img/final-rehearsal-flight-desktop.png" alt="">
+    <div class="pin" style="left:32.25%;top:3.6%">1</div>
+    <div class="pin" style="left:67.5%;top:7.6%">2</div>
+    <div class="pin" style="left:92.25%;top:7.6%">3</div>
+    <div class="pin" style="left:97.4%;top:7.6%">4</div>
+    <div class="pin" style="left:25%;top:11.4%">5</div>
+    <div class="pin" style="left:35%;top:34%">6</div>
+    <div class="pin" style="left:57%;top:25%">7</div>
+    <div class="pin" style="left:26.25%;top:62%">8</div>
+    <div class="pin" style="left:37.25%;top:62%">9</div>
+    <div class="pin" style="left:50.4%;top:62%">10</div>
+    <div class="pin" style="left:67.6%;top:62%">11</div>
+    <div class="pin" style="left:97.6%;top:13.2%">12</div>
+    <div class="pin" style="left:97.6%;top:30.4%">13</div>
+    <div class="pin" style="left:97.6%;top:48.4%">14</div>
+    <div class="pin" style="left:70%;top:82%">15</div>
+    <div class="pin" style="left:70%;top:89.4%">16</div>
+  </div>
+  <div class="legend">
+    <div><span class="n">1</span><span><b>Simulator / Real drone.</b> Practise in the simulator; switch to the real drone when ready.</span></div>
+    <div><span class="n">2</span><span><b>Status lights.</b> Radio, goggles, brain (Claude or offline) and the AI switch. Green is good.</span></div>
+    <div><span class="n">3</span><span><b>Record.</b> Saves a flight’s video, telemetry and commands on this Mac.</span></div>
+    <div><span class="n">4</span><span><b>Settings.</b> Brain, House, Flight, Camera, Voice, Alerts, Memory, Recordings.</span></div>
+    <div><span class="n">5</span><span><b>Ready to fly?</b> What’s still missing before a mission. Click to open.</span></div>
+    <div><span class="n">6</span><span><b>Live camera</b> with what it recognises: people, pets, furniture.</span></div>
+    <div><span class="n">7</span><span><b>Flight readout.</b> Vision fixes per second, position accuracy (POS ±), battery.</span></div>
+    <div><span class="n">8</span><span><b>Map</b> of your house, with tools, layers and a <b>3D</b> button.</span></div>
+    <div><span class="n">9</span><span><b>Sticks.</b> Grey = you, yellow = what goes to the drone.</span></div>
+    <div><span class="n">10</span><span><b>Telemetry.</b> Battery, link, flight mode, heading, speed.</span></div>
+    <div><span class="n">11</span><span><b>Simulator controls.</b> World, arm, AI switch, people &amp; pets, rehearsal, reset.</span></div>
+    <div><span class="n">12</span><span><b>Flying mode.</b> Observer, Co-pilot or Full auto (page 6).</span></div>
+    <div><span class="n">13</span><span><b>Missions.</b> Go to, Look in, Find people, Check on pets, Patrol, Return home, Stop.</span></div>
+    <div><span class="n">14</span><span><b>Mission log · Events · History.</b> What it’s doing, what it found, what it remembers.</span></div>
+    <div><span class="n">15</span><span><b>Command bar.</b> Hold the mic (or <kbd>Space</kbd>) to talk, or type.</span></div>
+    <div><span class="n">16</span><span><b>Stop</b> (<kbd>Esc</kbd>) and <b>Land</b> (<kbd>L</kbd>). Always one click away.</span></div>
+  </div>
+  <div class="footer"><span><b>03</b> · A tour of the screen</span><span>5</span></div>
+</section>
+
+<!-- ============================================================ 6. MODES & TALKING -->
+<section class="page">
+  <div class="kicker">04 · Who flies what</div>
+  <h2>Flying modes</h2>
+  <div class="modes">
+    <div class="box"><h3>Observer</h3><p>The AI watches and talks, and never moves the drone. Good for checking what it sees.</p></div>
+    <div class="box on"><h3>Co-pilot <span class="mute small">(default)</span></h3><p><b>You hold the height</b> with the throttle and take off and land when it asks. The AI steers.
+      Recommended starting mode; not a guarantee of safe flight.</p></div>
+    <div class="box"><h3>Full auto</h3><p>The AI does everything, including take-off and landing. A whoop has no height sensor, so height comes from the camera.
+      Only after two good Co-pilot flights.</p></div>
+  </div>
+
+  <h2 style="margin-top:0.32in">Talking to it</h2>
+  <p>Hold <kbd>Space</kbd> (or the mic button, or the radio’s <b>SF</b> button) and speak. Or type in the command bar and press <b>Go</b>.
+    The chips above the bar are one-click examples.</p>
+  <div class="cols" style="margin-top:0.1in;align-items:start">
+    <table>
+      <tr><th>With your house loaded</th></tr>
+      <tr><td>“Go to the living room”</td></tr>
+      <tr><td>“Look in the bedroom”</td></tr>
+      <tr><td>“Find people” · “Check on the pets”</td></tr>
+      <tr><td>“Patrol the house”</td></tr>
+      <tr><td>“Come home” · “Land”</td></tr>
+      <tr><td>“Where are you?”</td></tr>
+      <tr><td>“Where did you last see the cat?” · “What changed?”</td></tr>
+    </table>
+    <table>
+      <tr><th>Anywhere</th></tr>
+      <tr><td>“Take off”</td></tr>
+      <tr><td>“Turn left 90” · “Move forward a metre”</td></tr>
+      <tr><td>“Look around and tell me what you see”</td></tr>
+      <tr><td>“Find the cat” · “Follow the cat”</td></tr>
+      <tr><td>“Stop” · “Land”</td></tr>
+    </table>
+  </div>
+  <div class="box tip" style="margin-top:0.2in">
+    <span class="tag">Good to know</span>
+    <ul style="margin:0">
+      <li>With a house map, motion is planned, not improvised: Claude picks the mission, the planner flies it.</li>
+      <li>Missions check the battery before every leg and come home with a margin.</li>
+      <li>Without a Claude key, the offline brain understands simple phrases like these. With a key, you can talk normally.</li>
+      <li>After each command, the log shows what Claude cost (usually a fraction of a cent, thanks to caching).</li>
+    </ul>
+  </div>
+  <div class="footer"><span><b>04</b> · Flying modes and talking to it</span><span>6</span></div>
+</section>
+
+<!-- ============================================================ 7. HOUSE + 3D MAP -->
+<section class="page">
+  <div class="kicker">05 · Teach it your home</div>
+  <h2>Your house and its 3D map</h2>
+  <p class="lede">Whoop Pilot uses the 3D capture of your house (from SiteSpec or Spacial) as its map and as a 1:1 simulator.
+    It only ever flies through space the scan has actually seen.</p>
+
+  <ol class="steps">
+    <li><span class="path">Settings <i>→</i> House</span> lists your captures, newest first. Click <span class="ui">Use this capture</span>. It copies the capture into the browser, finds the rooms and doors, and builds the flight map.</li>
+    <li>Click <span class="ui">Build the 3D map</span> (about 10 seconds). Your house becomes 5 cm cubes: <b>clear</b>, <b>blocked</b> or <b>never seen</b>. Never-seen space counts as a wall.</li>
+    <li>Read the <b>coverage</b> table. It says how much of each room the drone can fly in, and which spots the scan missed.</li>
+  </ol>
+
+  <div class="cols" style="grid-template-columns:1fr 1.05fr;margin-top:0.14in;align-items:start">
+    <div>
+      <div class="shot"><img src="img/crop-coverage.png" alt=""></div>
+      <div class="cap">Coverage: 94% of the space the drone can fly in (0.3 to 1.6 m up) is known. Each room gets a plain-language rescan suggestion.</div>
+    </div>
+    <div>
+      <div class="shot"><img src="img/c-map3d-coverage.png" alt=""></div>
+      <div class="cap">From above. <b style="color:#15803d">Green</b>: known clear. <b style="color:#db2777">Pink</b>: never seen. Circles are the biggest gaps; squares show where to stand to rescan.</div>
+    </div>
+  </div>
+
+  <div class="box note" style="margin-top:0.18in">
+    <span class="tag">Rescanning is optional</span>
+    <p style="margin:0">Gaps just make rooms a little smaller: the drone flies around them. To fill them, walk the scanner slowly around the furniture it names,
+      held low (about 0.7 m: the drone flies lower than you carried the scanner), then import the capture again. Your edits (home pad, names, no-fly zones) are kept.</p>
+  </div>
+  <div class="footer"><span><b>05</b> · Your house and its 3D map</span><span>7</span></div>
+</section>
+
+<!-- ============================================================ 8. HOME PAD + SURVEY -->
+<section class="page">
+  <div class="kicker">06 · Mark it up</div>
+  <h2>Home pad, places and no-fly zones</h2>
+  <div class="cols">
+    <div>
+      <h3>The home pad</h3>
+      <p>Every flight starts and ends here, and it’s how the drone learns where it is. Use the map’s <span class="ui">Home</span> tool:
+        click the spot, drag to set the way the nose faces. Print the pad mat from the setup guide and tape it there, arrow matching the map.</p>
+      <div class="box safety" style="padding:9px 12px"><b>Clearance matters.</b> The app wants 0.5 m clear all round and refuses take-off under 0.35 m.
+        Take-offs can drift 30–45 cm, so keep bags and boxes away from the pad.</div>
+    </div>
+    <div>
+      <h3>Places and no-fly zones</h3>
+      <ul>
+        <li><span class="ui">Landmark</span>: click a spot and name it (“cat bed”), then say “go to the cat bed”.</li>
+        <li><span class="ui">No-fly</span>: click the corners of a zone the drone must never enter.</li>
+        <li><span class="ui">Fly here</span>: click anywhere to send it there.</li>
+        <li>Rename rooms in <span class="path">Settings <i>→</i> House</span>. Ceiling fans and stairs are no-fly automatically.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 style="margin-top:0.26in;font-size:22pt">Let Claude survey the house <span class="mute" style="font-size:12pt;font-weight:500">optional</span></h2>
+  <p>Claude looks at pictures of your 3D scan, room by room, and suggests room names, places you can send the drone to (“the sofa”) and
+    hazards for a small drone (hanging lamps, plants, cables, glass) as no-fly zones. <b>Nothing changes until you accept it.</b></p>
+  <div class="cols" style="margin-top:0.1in;padding:0 0.25in">
+    <div>
+      <div class="shot"><img src="img/crop-survey-estimate.png" alt=""></div>
+      <div class="cap">1 · The cost comes first: here about $0.20 for 3 rooms.</div>
+    </div>
+    <div>
+      <div class="shot"><img src="img/crop-survey-review.png" alt=""></div>
+      <div class="cap">2 · Tick what you agree with, rename duplicates, then <b>Put … on the map</b>.</div>
+    </div>
+  </div>
+  <div class="footer"><span><b>06</b> · Home pad and Claude’s survey</span><span>8</span></div>
+</section>
+
+<!-- ============================================================ 9. SIM, MISSIONS, HUD -->
+<section class="page">
+  <div class="kicker">07 · Practise, then fly</div>
+  <h2>Simulator, missions and the HUD</h2>
+  <div class="cols" style="grid-template-columns:1fr 2.05in;gap:0.28in">
+    <div>
+      <h3>Rehearse in your own house</h3>
+      <ol class="steps amber">
+        <li><span class="ui">Simulator</span> → <span class="ui">My house</span>. The drone camera is rendered from your scan.</li>
+        <li>Turn on <span class="ui">Rehearse the real flight</span>: it flies exactly as the real drone will, with its camera’s blur, real speed limits and position from video.</li>
+        <li>Press <span class="ui">Reset</span> <kbd>R</kbd>, pick a room and press <span class="ui">Look in</span>, then <span class="ui">Return home</span>.</li>
+        <li>Turn on <span class="ui">People &amp; pets</span> to see how it waits for people. It keeps 1.5 m away from anyone walking.</li>
+      </ol>
+      <p class="small mute">By hand in the simulator: <kbd>E</kbd> arm · <kbd>Q</kbd> AI switch · <kbd>W</kbd><kbd>S</kbd> throttle · <kbd>A</kbd><kbd>D</kbd> yaw · arrow keys pitch and roll.</p>
+
+      <h3>The mission buttons</h3>
+      <table>
+        <tr><td>Go to</td><td>Flies to the room or place picked in the list.</td></tr>
+        <tr><td>Look in</td><td>Stops at the doorway, looks around, reports who and what is there.</td></tr>
+        <tr><td>Find people</td><td>Searches room by room until everyone is found.</td></tr>
+        <tr><td>Check on pets</td><td>Visits the rooms to find the cat and the dog.</td></tr>
+        <tr><td>Patrol</td><td>Every room, then home. Alerts you about people and changes.</td></tr>
+        <tr><td>Return home</td><td>Back to the pad and lands.</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="phone"><img src="img/final-rehearsal-flight-390.png" alt=""></div>
+      <div class="cap" style="text-align:center">Works on a phone-sized window too. Stop and Land stay at the bottom.</div>
+    </div>
+  </div>
+
+  <h3>Reading the flight readout</h3>
+  <div class="cols3" style="font-size:9pt">
+    <div><span class="chip ok">AI FLYING</span> <span class="chip">Full auto</span><br>Who is flying, and in which mode.</div>
+    <div><span class="chip">VISION 4.0/s</span><br>Position fixes from the video each second. 3 or more is healthy.</div>
+    <div><span class="chip">POS ±0.09 m</span><br>How sure it is of its position. Small is good.</div>
+  </div>
+  <div class="footer"><span><b>07</b> · Simulator, missions and the HUD</span><span>9</span></div>
+</section>
+
+<!-- ============================================================ 10. IN THE AIR -->
+<section class="page">
+  <div class="kicker">07 · In the air</div>
+  <h2>What it tells you while flying</h2>
+  <p class="lede">The drone always says why it’s slow, holding or landing: on the video and in the mission log.</p>
+  <table>
+    <tr><th style="width:40%">You see</th><th>What it means, and what to do</th></tr>
+    <tr><td><span class="chip bad">NO POSITION · SET ON PAD</span></td><td>It doesn’t know where it is. Land, put it on the pad, press <span class="ui">The drone is on its home pad</span>.</td></tr>
+    <tr><td><span class="chip warn">POSITION LOST · HOLDING</span></td><td>It holds still and asks for help (Co-pilot) or lands where it is (Full auto).</td></tr>
+    <tr><td><span class="chip warn">NO VISION FIX</span> · <span class="chip warn">VISION DISAGREES</span></td><td>The camera can’t place itself right now. It slows down and turns toward a view it recognises.</td></tr>
+    <tr><td>flying slowly: no live depth yet</td><td>It’s being careful until its depth estimate starts. Not stuck.</td></tr>
+    <tr><td>Holding back: a person is close</td><td>It keeps 1.5 m from people. It waits, then finds another way or gives up politely.</td></tr>
+    <tr><td>Waiting for live depth to start before I fly on</td><td>A few seconds after a Full-auto take-off. If depth never starts, it lands on the pad.</td></tr>
+    <tr><td>The way home is blocked (…)</td><td>It takes a closer look, tries again with more room, and otherwise lands on the nearest clear spot and says where.</td></tr>
+    <tr><td>The battery is too low for that</td><td>It flies home and lands.</td></tr>
+    <tr><td>The video is too slow for me to fly by. Please take over and land.</td><td>Take the sticks and land.</td></tr>
+    <tr><td><span class="chip" style="background:#7e22ce">1 possible change · check</span></td><td>Something the scan doesn’t have. Tap it to see the two pictures and decide (page 12). Until then it flies around it.</td></tr>
+  </table>
+  <div class="box tip" style="margin-top:0.22in">
+    <span class="tag">Speed limits</span>
+    <p style="margin:0">The real drone flies at most <b>0.3 m/s</b> until you measure its braking, <b>0.4 m/s</b> after, and <b>0.22 m/s</b> whenever
+      its live depth can’t see. Slow is deliberate: it is a 36 g drone indoors.</p>
+  </div>
+  <div class="footer"><span><b>07</b> · In the air</span><span>10</span></div>
+</section>
+
+<!-- ============================================================ 11. MAP + 3D -->
+<section class="page">
+  <div class="kicker">08 · Where it is, has been and will be</div>
+  <h2>The map and the 3D view</h2>
+  <p class="lede">Turn layers on and off under the map, and press <span class="ui">Key</span> for the legend. Press <span class="ui">3D</span> to fly the view around your scan.</p>
+  <div class="cols" style="align-items:start">
+    <div>
+      <div class="shot"><img src="img/crop-map.png" alt=""></div>
+      <div class="cap">The map after a patrol: the green trail is where it flew, red circles are where people were, the purple pin is a possible change.</div>
+    </div>
+    <div>
+      <div class="shot"><img src="img/crop-3d.png" alt=""></div>
+      <div class="cap">The same flight in 3D. <b>Follow</b> keeps the drone in view, <b>House</b> shows it all, <b>Unseen</b> shows the gaps in pink.</div>
+    </div>
+  </div>
+  <div class="cols3" style="margin-top:0.2in">
+    <div class="box" style="border-top:4px solid #eab308"><h3>Where it is</h3><p style="margin:0">The drone icon, with a ring showing how sure it is: yellow when sure, orange when unsure, red when lost.</p></div>
+    <div class="box" style="border-top:4px solid #15803d"><h3>Where it has been</h3><p style="margin:0">The trail, kept for every flight, with ✕ where it lost its position. Replay any old flight from History.</p></div>
+    <div class="box" style="border-top:4px solid #ca8a04"><h3>Where it will be</h3><p style="margin:0">The route line through the doors to its goal, redrawn whenever it has to go around something.</p></div>
+  </div>
+  <h3 style="margin-top:0.22in">Map layers</h3>
+  <div class="cols" style="align-items:start">
+    <table style="font-size:9pt">
+      <tr><td style="color:#db2777">Unknown</td><td>Never seen by the scan: never flown through.</td></tr>
+      <tr><td style="color:#0369a1">Seen</td><td>What the drone’s camera has looked at.</td></tr>
+      <tr><td style="color:#b45309">Gaps</td><td>Spots worth a rescan.</td></tr>
+    </table>
+    <table style="font-size:9pt">
+      <tr><td style="color:#15803d">Flown</td><td>The trail: where it has been.</td></tr>
+      <tr><td style="color:#ca8a04">Route</td><td>The planned path: where it will go.</td></tr>
+      <tr><td style="color:#9f1239">Obstacles</td><td>People, new things, possible changes.</td></tr>
+    </table>
+  </div>
+  <div class="box tip" style="margin-top:0.18in">
+    <span class="tag">Map tools</span>
+    <p style="margin:0"><span class="ui">Home</span> sets the pad · <span class="ui">Landmark</span> names a place · <span class="ui">No-fly</span> draws a zone ·
+      <span class="ui">Fly here</span> sends the drone · <span class="ui">+</span> <span class="ui">−</span> <span class="ui">Fit</span> zoom · <span class="ui">⇄</span> swaps the map and the camera view.</p>
+  </div>
+  <div class="footer"><span><b>08</b> · The map and the 3D view</span><span>11</span></div>
+</section>
+
+<!-- ============================================================ 12. HISTORY -->
+<section class="page">
+  <div class="kicker">09 · It remembers</div>
+  <h2>History, memory and changes</h2>
+  <div class="cols" style="grid-template-columns:2.45in 1fr;gap:0.3in">
+    <div class="shot" style="height:8.35in"><img src="img/c2-panels-desktop-light-history.png" alt="" style="width:100%"></div>
+    <div>
+      <p class="lede" style="margin-bottom:0.1in">The <span class="ui">History</span> tab is the drone’s memory of your house.</p>
+      <h3>Ask it</h3>
+      <p>Type a question or tap a suggestion: “Where did you last see the cat?”, “What changed?”, “Where have you been?”.
+        It answers from what it actually saw, and Claude can use the same memory.</p>
+      <h3>Last seen</h3>
+      <p>People, the cat, the dog and named things, with a picture, the room and when.</p>
+      <h3>Flights</h3>
+      <p>Every flight: time, distance, rooms, findings. Click one to replay its trail on the map and in 3D.</p>
+      <h3>Changes from the 3D scan</h3>
+      <p>Each possible change shows <b>what the drone saw</b> next to <b>what the scan shows</b>, and what Claude thinks if you allowed it to look. Then you decide:</p>
+      <table style="font-size:9pt;margin:0.04in 0 0.1in">
+        <tr><td>Confirm: it’s there</td><td>Added to the map for good. The drone avoids it.</td></tr>
+        <tr><td>Dismiss: not real</td><td>Forgotten. The drone flies there again.</td></tr>
+        <tr><td>A person or pet</td><td>Not a change. It was just someone passing.</td></tr>
+        <tr><td>Ask Claude again</td><td>A second opinion, about $0.02.</td></tr>
+      </table>
+      <p class="small">You can do this mid-flight too: tap the change on the map or the button on the video.</p>
+      <div class="box note" style="margin-top:0.12in;padding:9px 12px">
+        <span class="tag">Privacy</span>
+        <p style="margin:0;font-size:9pt">History is stored locally. AI commands, approved checks and surveys can send images to Anthropic. <span class="path">Settings <i>→</i> Memory</span> sets how long, and can delete pictures or whole flights.</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span><b>09</b> · History, memory and changes</span><span>12</span></div>
+</section>
+
+<!-- ============================================================ 13. READY TO FLY -->
+<section class="page">
+  <div class="kicker">10 · Before every flight</div>
+  <h2>Ready to fly?</h2>
+  <p class="lede">In <span class="ui">Real drone</span> mode this checklist opens first. Red items stop missions; orange ones are warnings. Most have a button that fixes them.</p>
+  <div class="shot"><img src="img/final-ready-real-desktop.png" alt=""></div>
+  <div class="cap">Split into what to do <b>before</b> the battery goes in, and what needs it <b>in</b>.</div>
+
+  <div class="cols" style="margin-top:0.18in">
+    <div class="box">
+      <h3>Before you plug in the battery</h3>
+      <ul style="margin:0">
+        <li>Radio connected over USB-C, its script answering.</li>
+        <li>Home pad set, with room around it.</li>
+        <li><span class="ui">Prepare everything now</span>: the vision models (about 250 MB, once), the 3D map and the position database. A minute or two.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>With the battery in</h3>
+      <ul style="margin:0">
+        <li>ANGLE mode, video from the goggles.</li>
+        <li>Camera calibrated, then the <b>pad check</b>.</li>
+        <li>Braking measured (optional: until then it stays at 0.3 m/s).</li>
+        <li>A clock shows the O4’s time left on the ground.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span><b>10</b> · Ready to fly?</span><span>13</span></div>
+</section>
+
+<!-- ============================================================ 14. FIRST FLIGHT A-D -->
+<section class="page">
+  <div class="kicker">11 · Three batteries</div>
+  <h2>Your first real flight</h2>
+  <p class="lede">Three short packs, in this order. With every new battery: drone on the mat, then press <span class="ui">The drone is on its home pad</span>.</p>
+  <div class="timeline">
+    <div class="stage"><div class="dot">A</div>
+      <div class="when">The day before · at the Mac, no battery</div>
+      <h3>Get everything ready</h3>
+      <p>Import the house and build the 3D map. Set the home pad and tape the mat down. Rehearse <b>Look in</b> and <b>Return home</b> in the simulator.
+        Switch to <span class="ui">Real drone</span> and press <span class="ui">Prepare everything now</span>. Tidy the floors, lights on, people and pets out. Charge 3 batteries and the goggles.</p>
+    </div>
+    <div class="stage"><div class="dot">B</div>
+      <div class="when">Pack 1 · about 2 minutes · you fly</div>
+      <h3>Record a pad turn and a short hover</h3>
+      <ol class="steps amber" style="font-size:9.6pt">
+        <li>Press <span class="ui">Record</span> <b>before</b> the battery goes in.</li>
+        <li>Drone on the mat, nose at the arrow. Battery in, goggles on. Press the pad button.</li>
+        <li><b>Turn the drone slowly by hand on the mat, one full circle (about 20 s)</b>, then hold still 3 s. This turn calibrates the camera.</li>
+        <li>AI switch <b>off</b>. Arm, and fly by hand: waist height, a gentle minute, looking at furnished walls.</li>
+        <li>Land on the mat, disarm, press <span class="ui">Record</span> again. Battery out.</li>
+      </ol>
+      <div class="box safety" style="padding:7px 11px;font-size:9pt">The O4 overheats after about 2.5 minutes on the ground. Don’t pause between steps.</div>
+    </div>
+    <div class="stage"><div class="dot">C</div>
+      <div class="when">At the Mac</div>
+      <h3>Calibrate the camera and check the recording</h3>
+      <p><span class="path">Settings <i>→</i> House <i>→</i> Camera calibration <i>→</i> From a recorded flight</span> → <span class="ui">Calibrate from it</span> → <span class="ui">Save it</span>.
+        Then <span class="path">Settings <i>→</i> Recordings</span> → <span class="ui">Check localization</span>. It passes with at least 3 fixes a second, never lost, and landing within 10 cm of the pad.
+        <b>Don’t go on until it passes.</b> If it fails, the report says why in one line.</p>
+    </div>
+  </div>
+  <div class="cols" style="grid-template-columns:0.85fr 1.15fr;margin-top:0.06in;align-items:start">
+    <div>
+      <div class="shot"><img src="img/crop-calib-dots.png" alt=""></div>
+      <div class="cap">Camera calibration: the yellow dots show how the real lens bends the picture. <b>Save it</b> when it says “Good calibration”.</div>
+    </div>
+    <div>
+      <div class="box" style="padding:10px 12px;font-size:8.8pt">
+        <div style="font-weight:700;background:#dcefe2;border-radius:6px;padding:6px 9px;margin-bottom:7px">The camera found the drone’s position all through this flight.</div>
+        <div class="ok">Video: 1905 of 1905 frames decoded (60.6 s of it flying).</div>
+        <div class="ok">The flight started on the home pad.</div>
+        <div class="ok">Position known from 1 s.</div>
+        <div class="ok">Position fixes from the camera: 5 a second (at least 3 needed).</div>
+        <div class="ok">The position was never lost.</div>
+        <div class="ok">4 cm typical, 11 cm at worst (95%).</div>
+        <div class="ok">The video delay setting (100 ms) fits the turns.</div>
+      </div>
+      <div class="cap">Check localization, an example from a test flight. Illustrative historical example; not a flight-safety certification.</div>
+    </div>
+  </div>
+  <div class="footer"><span><b>11</b> · Your first real flight</span><span>14</span></div>
+</section>
+
+<!-- ============================================================ 15. FIRST FLIGHT D-F -->
+<section class="page">
+  <div class="kicker">11 · Three batteries, continued</div>
+  <h2>Braking, then a real mission</h2>
+  <div class="timeline">
+    <div class="stage"><div class="dot">D</div>
+      <div class="when">Pack 2 · the first time the app flies itself</div>
+      <h3>The pad check, then measure braking</h3>
+      <ol class="steps amber" style="font-size:9.6pt">
+        <li>Drone on the mat, battery in, goggles on. Press the pad button: the <b>pad check</b> (about 3 s) matches the camera to the scan.</li>
+        <li>Choose <span class="ui">Full auto</span>, then <span class="ui">Measure braking</span> (<span class="path">Settings <i>→</i> Flight</span>). It takes off, flies three short runs at 0.3 m/s in the most open spot, and lands. Thumbs on the sticks.</li>
+        <li>If it says <i>“There isn’t room here to measure my braking”</i> (it needs a straight 1.6 m), skip it: missions still work at 0.3 m/s.</li>
+      </ol>
+    </div>
+    <div class="stage"><div class="dot">E</div>
+      <div class="when">Pack 3 · your first mission</div>
+      <h3>Look in a room, in Co-pilot</h3>
+      <ol class="steps amber" style="font-size:9.6pt">
+        <li>Choose <span class="ui">Co-pilot</span>, press <span class="ui">Record</span>. Drone on the mat, battery in, pad button. No red items in Ready to fly?</li>
+        <li>Pick a room next to the pad and press <span class="ui">Look in</span>. Arm when it asks, flip the <b>AI switch on</b>, take off with the throttle to waist height.</li>
+        <li><b>You hold the height, the app steers.</b> It asks you to land at the end.</li>
+        <li>Afterwards: stop Record, run <span class="ui">Check localization</span> on it, and look at <span class="ui">History</span>.</li>
+      </ol>
+    </div>
+    <div class="stage"><div class="dot">F</div>
+      <div class="when">Later</div>
+      <h3>When Full auto is OK</h3>
+      <ul>
+        <li>Two Co-pilot missions in a row whose recording check passed, never lost.</li>
+        <li>Braking measured, and take-offs that stayed well clear of everything.</li>
+        <li>The same mission flown cleanly in <span class="ui">Rehearse the real flight</span>.</li>
+      </ul>
+      <p>Then try one short <b>Look in</b> in Full auto, over carpet, nobody else in the room, thumbs on the sticks. Watch the height most: it comes from the camera.</p>
+    </div>
+  </div>
+  <div class="cols" style="margin-top:0.12in">
+    <div class="box tip">
+      <span class="tag">After every flight</span>
+      <ul style="margin:0">
+        <li>Stop <span class="ui">Record</span> and take the battery out (the O4 keeps heating while powered).</li>
+        <li>Glance at <span class="ui">History</span>: the path it flew, who it saw, any possible changes to decide.</li>
+        <li>Run <span class="ui">Check localization</span> on recorded flights while you’re still learning.</li>
+      </ul>
+    </div>
+    <div class="box safety">
+      <span class="tag">Stop flying if</span>
+      <ul style="margin:0">
+        <li>The recording check fails, or the drone says it lost its position more than once.</li>
+        <li>Take-offs drift toward furniture: move the pad somewhere more open.</li>
+        <li>The video stutters or the Mac gets hot and slow: close other apps first.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span><b>11</b> · Your first real flight</span><span>15</span></div>
+</section>
+
+<!-- ============================================================ 16. TROUBLESHOOTING -->
+<section class="page">
+  <div class="kicker">12 · Fixes</div>
+  <h2>When something is wrong</h2>
+  <table>
+    <tr><th style="width:42%">The app says</th><th>Do this</th></tr>
+    <tr><td>Connect the radio over USB-C · The radio’s AI script isn’t answering</td><td>Plug the radio in, press <span class="ui">Connect the radio (USB)</span>. USB-VCP must be <b>LUA</b> and the Mixer Script added (page 4).</td></tr>
+    <tr><td>Put the quad in ANGLE (self-level) mode</td><td>Flip your flight-mode switch to ANGLE.</td></tr>
+    <tr><td>No video from the drone yet · Still finding the camera picture</td><td>Goggles on and plugged in, battery in, wait a few seconds. Set the O4 to <b>4:3</b> if it says the shape is wrong.</td></tr>
+    <tr><td>Your pad is only … m from a wall or furniture</td><td>Move the mat somewhere more open and press <span class="ui">Set home again</span>.</td></tr>
+    <tr><td>Calibrate the camera · Put the drone on its home pad</td><td>Steps C and D of the first flight.</td></tr>
+    <tr><td>Battery in for …: about … before the O4 overheats</td><td>Hurry, or unplug and let it cool for a few minutes.</td></tr>
+    <tr><td>The computer is too busy to fly safely</td><td>Close other tabs and apps.</td></tr>
+    <tr><td>No position fix from the camera in the last second</td><td>Let the camera see the room, not a blank wall. Or land, put it on the pad and press the pad button.</td></tr>
+    <tr><td>Braking not measured: at most 0.3 m/s</td><td>Fine as it is, or do step D.</td></tr>
+  </table>
+  <h3 style="margin-top:0.22in">Goggles status</h3>
+  <table style="font-size:9pt">
+    <tr><td>Server not running</td><td>Double-click <b>start.command</b>. If it complains, install Node.js (<kbd>brew install node</kbd>).</td></tr>
+    <tr><td>No goggles on USB</td><td>Use a data cable, goggles on, OTG Wired Connection <b>off</b>.</td></tr>
+    <tr><td>The goggles don’t answer</td><td>Drone powered and linked; goggles awake (wear them or cover the sensor); not in Real View or the album; Share Liveview <b>on</b>.</td></tr>
+    <tr><td>Connected, but no picture</td><td>Power the drone and check the goggles show its camera.</td></tr>
+    <tr><td>Goggles went quiet</td><td>Nothing to do: the app reconnects by itself.</td></tr>
+  </table>
+  <div class="footer"><span><b>12</b> · When something is wrong</span><span>16</span></div>
+</section>
+
+<!-- ============================================================ 17. CLAUDE, COST, PRIVACY -->
+<section class="page">
+  <div class="kicker">13 · Claude</div>
+  <h2>Claude, cost and privacy</h2>
+  <p class="lede">Claude is the drone’s brain for language and a second pair of eyes. You stay in control of what it sees and what it costs.</p>
+  <div class="shot"><img src="img/final-consent-banner-desktop.png" alt=""></div>
+  <div class="cap">AI commands include a camera frame; picture checks and surveys use their consent flow. Review what is sent before using a key.</div>
+  <div class="cols" style="margin-top:0.2in">
+    <div>
+      <h3>What gets sent</h3>
+      <ul>
+        <li><b>Voice commands</b>: your words, the drone’s state and the current camera frame.</li>
+        <li><b>Picture checks</b>, only with your OK: a possible change (live vs scan) or an uncertain person or pet.</li>
+        <li><b>The survey</b>: renders of your 3D scan, with no people in them.</li>
+      </ul>
+      <h3>Your choices</h3>
+      <p><span class="ui">Allow once</span> · <span class="ui">Always allow</span> · <span class="ui">Not now</span> · <span class="ui">Never</span>.
+        Change it any time in <span class="path">Settings <i>→</i> Brain</span>: picture checks <b>Ask</b> (default), <b>On</b> or <b>Off</b>.</p>
+    </div>
+    <div>
+      <h3>What it costs</h3>
+      <table style="font-size:9pt">
+        <tr><td>A voice command</td><td>usually under a cent (prompt caching)</td></tr>
+        <tr><td>A change check</td><td>about $0.02</td></tr>
+        <tr><td>The house survey</td><td>about $0.20 for 3 rooms, shown first</td></tr>
+        <tr><td>Per-flight cap</td><td>$0.50 by default (Settings → Brain)</td></tr>
+      </table>
+      <p class="small mute" style="margin-top:0.08in">The log shows the cost of every call, split into voice commands, picture checks and memory questions.</p>
+      <div class="box note" style="padding:9px 12px;margin-top:0.08in">
+        <span class="tag">Your key</span>
+        <p style="margin:0;font-size:9pt">Your API key lives only in this browser. Calls go straight to Anthropic. Claude only advises: the planner and safety layer decide how the drone moves.</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span><b>13</b> · Claude, cost and privacy</span><span>17</span></div>
+</section>
+
+<!-- ============================================================ 18. QUICK REFERENCE -->
+<section class="page ref">
+  <div class="kicker">14 · Keep this one handy</div>
+  <h2>Quick reference</h2>
+  <div class="cols" style="margin-top:0.16in">
+    <div class="box">
+      <h3>Take over</h3>
+      <table>
+        <tr><td>Any stick</td><td>that axis is yours at once</td></tr>
+        <tr><td>AI switch SD up</td><td>you fly everything</td></tr>
+        <tr><td><kbd>Esc</kbd> / Stop</td><td>stop the mission</td></tr>
+        <tr><td><kbd>L</kbd> / Land</td><td>land now</td></tr>
+      </table>
+    </div>
+    <div class="box">
+      <h3>Keys</h3>
+      <table>
+        <tr><td><kbd>Space</kbd> (hold)</td><td>talk</td></tr>
+        <tr><td><kbd>E</kbd> · <kbd>Q</kbd></td><td>arm · AI switch (simulator)</td></tr>
+        <tr><td><kbd>W</kbd><kbd>S</kbd> · <kbd>A</kbd><kbd>D</kbd></td><td>throttle · yaw (simulator)</td></tr>
+        <tr><td>Arrows · <kbd>R</kbd></td><td>pitch/roll · reset (simulator)</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="cols" style="margin-top:0.18in">
+    <div class="box">
+      <h3>Say</h3>
+      <table>
+        <tr><td>Go to the …</td><td>fly to a room or place</td></tr>
+        <tr><td>Look in the …</td><td>look into a room</td></tr>
+        <tr><td>Find people</td><td>search every room</td></tr>
+        <tr><td>Check on the pets</td><td>find the cat and dog</td></tr>
+        <tr><td>Patrol</td><td>every room, then home</td></tr>
+        <tr><td>Come home</td><td>back to the pad</td></tr>
+        <tr><td>What changed?</td><td>from memory</td></tr>
+      </table>
+    </div>
+    <div class="box">
+      <h3>Every flight</h3>
+      <ol class="steps" style="font-size:9.2pt">
+        <li>Ready to fly? has no red items.</li>
+        <li>Record on, battery in, drone on the mat.</li>
+        <li>Press <b>The drone is on its home pad</b>.</li>
+        <li>Pick a mission, arm, AI switch on.</li>
+        <li>Thumbs on the sticks. About 3 minutes.</li>
+        <li>Land, disarm, battery out. Glance at History.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="box" style="margin-top:0.18in">
+    <h3>Numbers to remember</h3>
+    <table>
+      <tr><td>Flight time</td><td>about 3 minutes per sortie (4 min pack)</td><td>Pad clearance</td><td>0.5 m wanted, 0.35 m minimum</td></tr>
+      <tr><td>O4 on the ground</td><td>about 2.5 min before it overheats</td><td>Distance from people</td><td>1.5 m</td></tr>
+      <tr><td>Speed</td><td>0.3 m/s · 0.4 after braking test</td><td>Claude budget</td><td>$0.50 per flight</td></tr>
+    </table>
+  </div>
+  <div class="footer"><span><b>Whoop Pilot</b> · Quick reference</span><span>18</span></div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panels check</title>
+<link rel="stylesheet" href="../app/css/app.css">
+<link rel="stylesheet" href="../app/css/panels.css">
+<style>
+  body { overflow: auto; height: auto; }
+  .pc { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; padding: 14px; align-items: start; }
+  .pc-col { display: grid; gap: 14px; min-width: 0; }
+  .pc-3d { height: 440px; }
+  .pc-3d .map-slot { position: relative; }
+  .pc-side { max-height: none; }
+  .pc-dlg { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; min-width: 0; }
+  .pc-dlg .tab { padding: 14px 16px 18px; }
+  .pc-dlg h3 { margin: 0 0 4px; font-size: 15px; }
+  .pc-sec { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 8px; min-width: 0; }
+  .pc-sec:first-child { border-top: 0; padding-top: 0; }
+  .pc-flight { display: grid; gap: 8px; }
+  .pc-flight .hint { margin: 0; }
+  .pc-res { padding: 0 14px 14px; font: 12px ui-monospace, monospace; color: var(--muted); }
+  .pc-res table { border-collapse: collapse; } .pc-res td { padding: 2px 10px 2px 0; vertical-align: top; }
+  .pass { color: var(--ok); } .fail { color: var(--bad); } .skip { color: var(--warn); }
+  .pc-res pre { white-space: pre-wrap; }
+  #status { font-size: 12px; color: var(--muted); margin-left: auto; }
+  @media (max-width: 900px) { .pc { grid-template-columns: 1fr; padding: 10px 16px; } .pc-3d { height: 380px; } }
+  @media (max-width: 560px) { .pc-3d { height: 340px; } .pc-dlg .tab { padding: 12px; } }
+</style>
+</head>
+<body data-mode="sim" data-map="house">
+  <header class="topbar">
+    <div class="brand"><img src="../app/icon.svg" alt="" width="26" height="26"><strong>Panels check</strong></div>
+    <span id="status">starting…</span>
+  </header>
+  <main class="pc">
+    <section class="pc-col">
+      <div class="card map-card pc-3d">
+        <div class="card-h"><span>House in 3D</span><span class="muted" id="v3dInfo"></span></div>
+        <div class="map-slot"><canvas id="view3d"></canvas></div>
+      </div>
+      <div class="pc-flight">
+        <p class="hint">In flight: a change pin tapped in the 3D view (or the HUD's change count) opens this card.</p>
+        <div id="changeCard" hidden></div>
+      </div>
+      <div class="pc-dlg">
+        <div class="tab">
+          <section class="pc-sec"><h3>How much of the house the 3D map knows</h3><div id="coverage"></div></section>
+          <section class="pc-sec"><h3>Ask Claude to survey the house</h3><div id="survey"></div></section>
+          <section class="pc-sec"><h3>Calibrate the camera</h3><div id="calib"></div></section>
+          <section class="pc-sec"><h3>Check localization on a recorded flight</h3><div id="recheck"></div></section>
+        </div>
+      </div>
+    </section>
+    <aside class="side pc-side">
+      <div class="side-tabs" role="tablist"><button role="tab" aria-selected="false" type="button">Log</button><button role="tab" aria-selected="false" type="button">Events</button><button role="tab" aria-selected="true" type="button">History</button></div>
+      <div id="history"></div>
+    </aside>
+  </main>
+  <section class="pc-res"><table id="checks"></table><pre id="log"></pre></section>
+  <div id="extra" hidden></div>
+  <script type="module" src="./panels-check.js"></script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+{
+ "version": 1,
+ "captures": [
+  {
+   "folder": "Capture 2026-09-30 21.15.sitespec-iphone",
+   "name": "Capture 2026-09-30 21.15",
+   "scale": 1.022800197595571,
+   "rooms": [
+    {
+     "index": 0,
+     "name": "Living room",
+     "model": {
+      "floor_y": 0.2784
+     },
+     "fixtures": [
+      {
+       "kind": "other",
+       "label": "Chair",
+       "category": "chair",
+       "x": 3.0545,
+       "y": 4.5956,
+       "height": 0.251,
+       "top": 0.501,
+       "size": [
+        0.9,
+        0.886,
+        0.501
+       ],
+       "footprint": [
+        [
+         2.4485,
+         4.4171
+        ],
+        [
+         3.2423,
+         3.9925
+        ],
+        [
+         3.6604,
+         4.7741
+        ],
+        [
+         2.8666,
+         5.1987
+        ]
+       ],
+       "confidence": 0.4,
+       "attributes": {
+        "ChairType": "stool",
+        "ChairLegType": "unidentified",
+        "ChairArmType": "missing",
+        "ChairBackType": "missing"
+       },
+       "id": "43D55624-D5E6-40C6-9D71-9C12D7957706",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Sofa",
+       "category": "sofa",
+       "x": 1.9924,
+       "y": 3.4473,
+       "height": 0.502,
+       "top": 1.004,
+       "size": [
+        2.013,
+        1.155,
+        1.004
+       ],
+       "footprint": [
+        [
+         2.58,
+         2.4468
+        ],
+        [
+         2.5598,
+         4.4593
+        ],
+        [
+         1.4048,
+         4.4477
+        ],
+        [
+         1.4251,
+         2.4352
+        ]
+       ],
+       "confidence": 1,
+       "attributes": {
+        "SofaType": "rectangular"
+       },
+       "id": "09E21B33-ACAA-4AFA-BCD1-51AE1DCC915D",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Chair",
+       "category": "chair",
+       "x": 2.809,
+       "y": 0.9078,
+       "height": 0.492,
+       "top": 0.983,
+       "size": [
+        0.609,
+        0.634,
+        0.983
+       ],
+       "footprint": [
+        [
+         2.489,
+         1.2092
+        ],
+        [
+         2.4951,
+         0.6
+        ],
+        [
+         3.1291,
+         0.6064
+        ],
+        [
+         3.1229,
+         1.2156
+        ]
+       ],
+       "confidence": 0.7,
+       "attributes": {
+        "ChairType": "unidentified",
+        "ChairLegType": "four",
+        "ChairArmType": "existing",
+        "ChairBackType": "existing"
+       },
+       "id": "7DF9B4AE-859C-4C5A-84D8-F21FDEC985DC",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Storage",
+       "category": "storage",
+       "x": 2.3973,
+       "y": 0.1577,
+       "height": 0.476,
+       "top": 0.953,
+       "size": [
+        1.249,
+        0.563,
+        0.953
+       ],
+       "footprint": [
+        [
+         3.019,
+         0.4456
+        ],
+        [
+         1.77,
+         0.4331
+        ],
+        [
+         1.7757,
+         -0.1301
+        ],
+        [
+         3.0247,
+         -0.1176
+        ]
+       ],
+       "confidence": 0.4,
+       "attributes": {
+        "StorageType": "cabinet"
+       },
+       "id": "40B6FFA6-B986-45B0-9FE3-2B28B888C2CD",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Table",
+       "category": "table",
+       "x": 1.365,
+       "y": 5.8178,
+       "height": 0.436,
+       "top": 0.872,
+       "size": [
+        1.314,
+        0.541,
+        0.872
+       ],
+       "footprint": [
+        [
+         0.7108,
+         5.5407
+        ],
+        [
+         2.0247,
+         5.5539
+        ],
+        [
+         2.0192,
+         6.0949
+        ],
+        [
+         0.7053,
+         6.0817
+        ]
+       ],
+       "confidence": 1,
+       "attributes": {
+        "TableShapeType": "rectangular",
+        "TableType": "unidentified"
+       },
+       "id": "3A7A69F4-3A47-47EE-A3D9-EE42E8567ABF",
+       "source": "roomplan"
+      },
+      {
+       "kind": "stairs",
+       "label": "Stairs",
+       "category": "stairs",
+       "x": -1.3571,
+       "y": 4.2548,
+       "height": 0.126,
+       "top": 0.252,
+       "size": [
+        0.863,
+        0.899,
+        0.252
+       ],
+       "footprint": [
+        [
+         -0.9299,
+         4.7086
+        ],
+        [
+         -1.7933,
+         4.6999
+        ],
+        [
+         -1.7843,
+         3.801
+        ],
+        [
+         -0.9209,
+         3.8097
+        ]
+       ],
+       "confidence": 0.4,
+       "attributes": {},
+       "id": "3A69EA77-E5F3-46D5-B19E-25AA5FB499C0",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Table",
+       "category": "table",
+       "x": 2.4458,
+       "y": 0.9041,
+       "height": 0.399,
+       "top": 0.798,
+       "size": [
+        0.938,
+        0.917,
+        0.798
+       ],
+       "footprint": [
+        [
+         2.9088,
+         0.44
+        ],
+        [
+         2.8994,
+         1.3775
+        ],
+        [
+         1.9829,
+         1.3683
+        ],
+        [
+         1.9923,
+         0.4307
+        ]
+       ],
+       "confidence": 1,
+       "attributes": {
+        "TableShapeType": "rectangular",
+        "TableType": "unidentified"
+       },
+       "id": "E002A517-E4F4-400A-A6C5-9A8EFC63B850",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Chair",
+       "category": "chair",
+       "x": 2.2958,
+       "y": 5.3454,
+       "height": 0.379,
+       "top": 0.758,
+       "size": [
+        0.665,
+        0.667,
+        0.758
+       ],
+       "footprint": [
+        [
+         1.9042,
+         5.0834
+        ],
+        [
+         2.5565,
+         4.9529
+        ],
+        [
+         2.6875,
+         5.6074
+        ],
+        [
+         2.0352,
+         5.7379
+        ]
+       ],
+       "confidence": 0.4,
+       "attributes": {
+        "ChairType": "unidentified",
+        "ChairLegType": "unidentified",
+        "ChairArmType": "existing",
+        "ChairBackType": "existing"
+       },
+       "id": "6594E896-6AB4-4CB7-9AD6-7F9DA1A0B7E7",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Table",
+       "category": "table",
+       "x": 3.2699,
+       "y": 3.2903,
+       "height": 0.272,
+       "top": 0.544,
+       "size": [
+        1.444,
+        0.948,
+        0.544
+       ],
+       "footprint": [
+        [
+         2.7887,
+         4.0074
+        ],
+        [
+         2.8032,
+         2.5636
+        ],
+        [
+         3.7512,
+         2.5732
+        ],
+        [
+         3.7366,
+         4.0169
+        ]
+       ],
+       "confidence": 1,
+       "attributes": {
+        "TableShapeType": "rectangular",
+        "TableType": "coffee"
+       },
+       "id": "E919E412-4BB5-4E36-8B5F-8707507AF71E",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Table",
+       "category": "table",
+       "x": 3.1764,
+       "y": 4.5437,
+       "height": 0.25,
+       "top": 0.501,
+       "size": [
+        1.037,
+        0.981,
+        0.501
+       ],
+       "footprint": [
+        [
+         3.6722,
+         4.0304
+        ],
+        [
+         3.6617,
+         5.0669
+        ],
+        [
+         2.6805,
+         5.0571
+        ],
+        [
+         2.691,
+         4.0205
+        ]
+       ],
+       "confidence": 1,
+       "attributes": {
+        "TableShapeType": "unidentified",
+        "TableType": "unidentified"
+       },
+       "id": "7A792CE7-DC32-473C-96C8-936177D463F6",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Table",
+       "category": "table",
+       "x": -1.2429,
+       "y": 0.282,
+       "height": 0.525,
+       "top": 1.051,
+       "size": [
+        1.169,
+        0.885,
+        1.051
+       ],
+       "footprint": [
+        [
+         -0.663,
+         0.7303
+        ],
+        [
+         -1.8317,
+         0.7185
+        ],
+        [
+         -1.8228,
+         -0.1663
+        ],
+        [
+         -0.6541,
+         -0.1546
+        ]
+       ],
+       "confidence": 1,
+       "attributes": {
+        "TableShapeType": "rectangular",
+        "TableType": "unidentified"
+       },
+       "id": "E677CA8C-F84C-4D5A-8EEA-300746989AD1",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Table",
+       "category": "table",
+       "x": 4.3573,
+       "y": 4.9809,
+       "height": 0.36,
+       "top": 0.72,
+       "size": [
+        0.594,
+        0.552,
+        0.72
+       ],
+       "footprint": [
+        [
+         4.6514,
+         5.2599
+        ],
+        [
+         4.0575,
+         5.254
+        ],
+        [
+         4.0631,
+         4.7019
+        ],
+        [
+         4.657,
+         4.7078
+        ]
+       ],
+       "confidence": 1,
+       "attributes": {
+        "TableShapeType": "rectangular",
+        "TableType": "coffee"
+       },
+       "id": "98D9D1BA-7089-4243-928A-BD779BEFBEAC",
+       "source": "roomplan"
+      },
+      {
+       "kind": "other",
+       "label": "Sofa",
+       "category": "sofa",
+       "x": 4.5094,
+       "y": 3.2608,
+       "height": 0.537,
+       "top": 1.074,
+       "size": [
+        2.998,
+        1.207,
+        1.074
+       ],
+       "footprint": [
+        [
+         3.8908,
+         4.7534
+        ],
+        [
+         3.9209,
+         1.756
+        ],
+        [
+         5.1281,
+         1.7682
+        ],
+        [
+         5.098,
+         4.7656
+        ]
+       ],
+       "confidence": 1,
+       "attributes": {
+        "SofaType": "rectangular"
+       },
+       "id": "1B6F968C-6489-485C-95F5-06316DC12710",
+       "source": "roomplan"
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "name": "Room 2",
+     "model": {
+      "floor_y": -0.6359
+     },
+     "fixtures": []
+    }
+   ]
+  }
+ ]
+}

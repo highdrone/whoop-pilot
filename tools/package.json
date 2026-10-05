@@ -1,0 +1,19 @@
+{
+  "name": "whoop-pilot-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test-agent.mjs && node test-goggles.mjs && node test-radio-bridge.mjs && node test-server.mjs && node test-sim.mjs && node test-twin.mjs && node test-vision.mjs",
+    "goggles": "node goggles.mjs",
+    "test:extended": "node test-agent.mjs && node test-ai.mjs && node test-avoid.mjs && node test-changes.mjs && node test-goggles.mjs && node test-house-sim.mjs && node test-house.mjs && node test-integration.mjs && node test-loc.mjs && node test-memory.mjs && node test-missions.mjs && node test-panels.mjs && node test-radio-bridge.mjs && node test-server.mjs && node test-sim.mjs && node test-twin.mjs && node test-ui.mjs && node test-vision.mjs && node test-voxels.mjs && node test-wave-c.mjs"
+  },
+  "devDependencies": {
+    "fengari": "0.1.5"
+  },
+  "dependencies": {
+    "usb": "2.18.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

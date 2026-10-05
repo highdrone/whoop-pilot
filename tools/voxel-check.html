@@ -1,0 +1,40 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D map check</title>
+<style>
+  body{font:13px ui-monospace,monospace;background:#111;color:#ddd;padding:12px;margin:0}
+  h3{margin:4px 0 10px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin-bottom:12px}
+  figure{margin:0;display:table} figcaption{display:table-caption;caption-side:bottom;color:#9ab;margin-top:3px}
+  canvas{display:block;background:#000;max-width:100%}
+  table{border-collapse:collapse} td{padding:2px 10px 2px 0;vertical-align:top}
+  .pass{color:#6d6} .fail{color:#f66} .dim{color:#888}
+  pre{white-space:pre-wrap;color:#aaa}
+  #bar{height:6px;background:#333;width:420px;max-width:100%;margin:6px 0} #bar>div{height:100%;background:#5ae;width:0}
+</style>
+<h3>3D map check</h3>
+<p class="dim">Builds the house's voxel map (app/js/house/voxels.js) from a capture the server serves under /house-files/: splat surfaces,
+the capture camera's rays, the twin's depth cubes at the capture positions and a frontier sweep of virtual drone viewpoints, then the
+coverage report (coverage.js), and checks the twin's props and depthBatch on the same splat. Query: ?project= (default: the newest
+capture), &amp;views= (frontier views, 300), &amp;save= (URL that takes POSTed PNGs: ?name=c-map3d-...), &amp;only=build,changes,live,props,
+&amp;keep=1 (keep the twin afterwards: window.ctx for console experiments). "live" flies the twin's depth along a planned path with
+noise and pose error through integrate() and times it with the next map query; "changes" closes and opens every door and
+confirms an obstacle over never-seen space and then its removal, and checks the map is as it was.</p>
+<div id="status">starting</div><div id="bar"><div></div></div>
+<table id="checks"></table>
+<div class="row">
+  <figure><canvas id="s05"></canvas><figcaption>0.5 m above the floor</figcaption></figure>
+  <figure><canvas id="s10"></canvas><figcaption>1.0 m</figcaption></figure>
+  <figure><canvas id="s15"></canvas><figcaption>1.5 m</figcaption></figure>
+</div>
+<div class="row">
+  <figure><canvas id="cover"></canvas><figcaption id="coverCap">coverage at drone heights on the orthophoto</figcaption></figure>
+</div>
+<div class="row">
+  <figure><canvas id="pWith" width="320" height="240"></canvas><figcaption>props: a closed door panel and a box</figcaption></figure>
+  <figure><canvas id="pWithout" width="320" height="240"></canvas><figcaption>{ props: false } (the house as captured)</figcaption></figure>
+  <figure><canvas id="pDepth" width="320" height="240"></canvas><figcaption>expected depth with props</figcaption></figure>
+</div>
+<pre id="log"></pre>
+<script type="module" src="./voxel-check.js"></script>

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vision check</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f6f7f9; --fg: #1d2330; --dim: #667085; --card: #fff; --line: #d9dde4; --ok: #15803d; --bad: #b42318; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #111418; --fg: #e6e9ef; --dim: #98a2b3; --card: #1a1f26; --line: #2c333d; --ok: #4ade80; --bad: #f97066; } }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--fg); font: 14px/1.45 ui-sans-serif, system-ui, sans-serif; }
+  h1 { font-size: 20px; margin: 0 0 6px; }
+  p { margin: 6px 0; max-width: 72em; }
+  .dim { color: var(--dim); }
+  code, pre, td { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+  #status { font-weight: 600; }
+  .warn { color: var(--bad); }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); }
+  th, td { border: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; }
+  th { font-size: 12px; color: var(--dim); font-weight: 600; }
+  .yes { color: var(--ok); font-weight: 600; }
+  .no { color: var(--bad); font-weight: 600; }
+  #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-top: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+  .card canvas { width: 100%; height: auto; display: block; border-radius: 4px; }
+  .card div { font-family: ui-monospace, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; }
+  .rf { color: #16a34a; } .mp { color: #ea580c; }
+  pre { background: var(--card); border: 1px solid var(--line); padding: 8px; overflow: auto; max-height: 24em; }
+</style>
+</head>
+<body>
+<h1>Vision check</h1>
+<p class="dim">Runs the app's detector (<code>app/js/detector.js</code>) on still pictures cut to the drone's 4:3 view: RF-DETR in its
+WebGPU worker, timed, next to MediaPipe EfficientDet-Lite, plus the tracked output the app gets. Add <code>?nowebgpu</code> to
+check the automatic MediaPipe fallback and <code>&amp;quality=accurate</code> for RF-DETR-S. Pictures: choose files, or pass
+<code>?images=&lt;folder URL&gt;&amp;list=a.jpg=person,b.jpg=cat,c.jpg</code> (the label after <code>=</code> is what should be found).
+"Found" is scored twice: in the raw detections, and in the tracked output, which is what the app's <code>find()</code> sees.</p>
+<p id="status">Starting...</p>
+<div class="row"><input id="files" type="file" accept="image/*" multiple> <button id="run">Run</button> <span id="progress" class="dim"></span></div>
+<table id="summary" hidden></table>
+<div id="cards"></div>
+<pre id="json" hidden></pre>
+
+<script type="module">
+import { ObjectDetector } from "../app/js/detector.js";
+import { unavailable } from "../app/js/vision/rfdetr.js";
+
+const q = new URLSearchParams(location.search);
+const quality = q.get("quality") || "fast";
+const FIND = 0.4; // the app's find() threshold: "found" below means at least this
+const $ = (s) => document.querySelector(s);
+const med = (a) => (a.length ? [...a].sort((x, y) => x - y)[a.length >> 1] : NaN);
+const p90 = (a) => (a.length ? [...a].sort((x, y) => x - y)[Math.min(a.length - 1, Math.floor(a.length * 0.9))] : NaN);
+const r1 = (v) => Math.round(v * 10) / 10;
+const list = (dets, min = 0.3) => dets.filter((d) => d.score >= min).slice(0, 6).map((d) => `${d.label}${d.trackId ? "#" + d.trackId : ""}:${d.score.toFixed(2)}`).join(" ") || "-";
+const found = (dets, label) => dets.some((d) => d.label === label && d.score >= FIND);
+const say = (t, warn) => {
+  $("#status").textContent = t;
+  $("#status").className = warn ? "warn" : "";
+};
+
+let main, mp;
+async function detectors() {
+  if (!main) {
+    main = new ObjectDetector({ quality }); // the app's default: RF-DETR, or MediaPipe when it can't run
+    main.on("status", (s) => say(s.text, s.level === "warn"));
+    mp = new ObjectDetector({ backend: "mediapipe", quality });
+  }
+  await Promise.all([main.load(), mp.load()]);
+}
+
+// The middle 4:3 of a picture at 640x480 (a video region) and at 320x240 (perception.js's work canvas).
+async function prep(blob) {
+  const img = await createImageBitmap(blob);
+  let [sw, sh] = [img.width, img.height];
+  if (sw / sh > 4 / 3) sw = (sh * 4) / 3;
+  else sh = (sw * 3) / 4;
+  const full = Object.assign(document.createElement("canvas"), { width: 640, height: 480 });
+  full.getContext("2d").drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, 0, 0, 640, 480);
+  const work = Object.assign(document.createElement("canvas"), { width: 320, height: 240 });
+  work.getContext("2d", { willReadFrequently: true }).drawImage(full, 0, 0, 320, 240);
+  img.close();
+  return { full, work };
+}
+
+// One RF-DETR frame through the detector. Resolves with the worker's reply for it, the wall time from submit to reply,
+// and what detect() returned when it was submitted (the tracks so far).
+function rfFrame(pic, region) {
+  const t = performance.now();
+  return new Promise((resolve, reject) => {
+    const rf = main.rf;
+    const orig = rf.onResult;
+    rf.onResult = (m) => {
+      orig(m);
+      if (m.t !== t) return;
+      rf.onResult = orig;
+      if (m.type === "fail") reject(new Error(m.error));
+      else resolve({ m, wall: performance.now() - t, out });
+    };
+    const out = main.detect(pic.work, 320, 240, region ? { t, element: pic.full, region: { sx: 0, sy: 0, sw: 640, sh: 480 } } : { t });
+  });
+}
+
+function draw(pic, rf, mpDets) {
+  const c = Object.assign(document.createElement("canvas"), { width: 640, height: 480 });
+  const g = c.getContext("2d");
+  g.drawImage(pic.full, 0, 0);
+  g.lineWidth = 3;
+  g.font = "600 15px ui-sans-serif, system-ui";
+  const boxes = (dets, color, dash, dy) => {
+    g.strokeStyle = g.fillStyle = color;
+    g.setLineDash(dash);
+    for (const d of dets.filter((d) => d.score >= 0.3)) {
+      const [x, y, w, h] = [d.box.x * 640, d.box.y * 480, d.box.w * 640, d.box.h * 480];
+      g.strokeRect(x, y, w, h);
+      g.fillText(`${d.label} ${Math.round(d.score * 100)}`, x + 4, Math.max(16, y + dy));
+    }
+  };
+  boxes(mpDets, "#ea580c", [8, 6], 34);
+  boxes(rf, "#16a34a", [], 16);
+  return c;
+}
+
+async function sources() {
+  const files = [...$("#files").files];
+  if (files.length) return files.map((f) => ({ name: f.name, expect: null, blob: () => f }));
+  const base = q.get("images");
+  if (!base) return [];
+  return (q.get("list") || "").split(",").filter(Boolean).map((item) => {
+    const [name, expect = null] = item.split("=");
+    return { name, expect, blob: async () => (await fetch(new URL(name, new URL(base, location.href)))).blob() };
+  });
+}
+
+async function run({ frames = 12 } = {}) {
+  $("#run").disabled = true;
+  $("#cards").textContent = "";
+  try {
+    say("Loading detectors...");
+    const t0 = performance.now();
+    await detectors();
+    const loadMs = performance.now() - t0;
+    const useRf = main.backend === "rfdetr";
+    const res = {
+      backend: main.backend, model: main.model, status: main.status, webgpu: unavailable() || "available",
+      fallback: !useRf, loadMs: Math.round(loadMs), quality, images: [],
+    };
+    const workerMs = [], runMs = [], wallMs = [], mpMs = [];
+    const items = await sources();
+    for (const [i, it] of items.entries()) {
+      $("#progress").textContent = `${i + 1}/${items.length} ${it.name}`;
+      const pic = await prep(await it.blob());
+      main.tracker.reset();
+      const row = { name: it.name, expect: it.expect };
+      let rfDets = [];
+      let tracked = [];
+      if (useRf) {
+        await rfFrame(pic, true);
+        for (let k = 0; k < frames; k++) {
+          const { m, wall } = await rfFrame(pic, true);
+          workerMs.push(m.ms.total);
+          runMs.push(m.ms.run);
+          wallMs.push(wall);
+          rfDets = m.dets;
+        }
+        row.rf = list(rfDets);
+        tracked = (await rfFrame(pic, true)).out;
+        let small = [];
+        for (let k = 0; k < 2; k++) small = (await rfFrame(pic, false)).m.dets;
+        row.rf320 = list(small);
+      } else {
+        for (let k = 0; k < 3; k++) tracked = main.detect(pic.work, 320, 240);
+      }
+      row.tracked = list(tracked);
+      mp.tracker.reset();
+      let mpDets = [];
+      let mpTracked = [];
+      for (let k = 0; k < 6; k++) {
+        const t = performance.now();
+        mpTracked = mp.detect(pic.work, 320, 240, { t });
+        if (k) mpMs.push(performance.now() - t);
+        mpDets = mp.raw.dets;
+      }
+      row.mp = list(mpDets);
+      row.mpTracked = list(mpTracked);
+      if (it.expect) {
+        row.rfFound = useRf ? found(rfDets, it.expect) : null;
+        row.appFound = found(tracked, it.expect);
+        row.mpFound = found(mpDets, it.expect);
+        row.mpAppFound = found(mpTracked, it.expect);
+      }
+      res.images.push(row);
+      const card = document.createElement("div");
+      card.className = "card";
+      card.append(draw(pic, rfDets, mpDets));
+      card.insertAdjacentHTML("beforeend", `<div><b>${it.name}</b>${it.expect ? ` (expect ${it.expect})` : ""}</div>` +
+        (useRf ? `<div class="rf">RF-DETR: ${row.rf}</div><div class="rf">RF-DETR from 320 px: ${row.rf320}</div>` : "") +
+        `<div class="mp">MediaPipe: ${row.mp}</div><div class="mp">MediaPipe tracked: ${row.mpTracked}</div><div>tracked (${main.backend}): ${row.tracked}</div>`);
+      $("#cards").append(card);
+    }
+    const scored = res.images.filter((r) => r.expect);
+    Object.assign(res, {
+      rf: useRf ? { frames: workerMs.length, workerMedMs: r1(med(workerMs)), workerP90Ms: r1(p90(workerMs)), runMedMs: r1(med(runMs)), wallMedMs: r1(med(wallMs)), wallP90Ms: r1(p90(wallMs)), within30ms: med(wallMs) <= 30 } : null,
+      mp: { model: mp.model, medMs: r1(med(mpMs)), p90Ms: r1(p90(mpMs)) },
+      // tracked: what find() gets, from the app's detector (main, RF-DETR or its fallback) and from MediaPipe
+      found: scored.length ? {
+        of: scored.length,
+        raw: { rf: useRf ? scored.filter((r) => r.rfFound).length : null, mp: scored.filter((r) => r.mpFound).length },
+        tracked: { app: scored.filter((r) => r.appFound).length, mp: scored.filter((r) => r.mpAppFound).length },
+        appOnly: scored.filter((r) => r.appFound && !r.mpAppFound).map((r) => r.name),
+        mpOnly: scored.filter((r) => r.mpAppFound && !r.appFound).map((r) => r.name),
+      } : null,
+    });
+    summary(res);
+    say(`${main.status}${useRf ? ` ${res.rf.wallMedMs} ms per frame (worker ${res.rf.workerMedMs} ms).` : ""}`, !useRf);
+    $("#progress").textContent = "";
+    return (window.lastResult = res);
+  } finally {
+    $("#run").disabled = false;
+  }
+}
+
+function summary(res) {
+  const t = $("#summary");
+  const yn = (v) => (v === null || v === undefined ? "" : v ? `<span class="yes">yes</span>` : `<span class="no">no</span>`);
+  t.innerHTML = `<tr><th>picture</th><th>expect</th><th>RF-DETR (&ge;0.3)</th><th>found</th><th>MediaPipe (&ge;0.3)</th><th>found</th>` +
+    `<th>tracked, ${res.backend} (what find() sees)</th><th>found</th><th>MediaPipe tracked</th><th>found</th></tr>` +
+    res.images.map((r) => `<tr><td>${r.name}</td><td>${r.expect || ""}</td><td>${r.rf ?? "n/a"}</td><td>${yn(r.rfFound)}</td><td>${r.mp}</td><td>${yn(r.mpFound)}</td>` +
+      `<td>${r.tracked}</td><td>${yn(r.appFound)}</td><td>${r.mpTracked}</td><td>${yn(r.mpAppFound)}</td></tr>`).join("");
+  t.hidden = false;
+  $("#json").textContent = JSON.stringify(res, null, 1);
+  $("#json").hidden = false;
+}
+
+$("#run").onclick = () => run().catch((e) => say(`Failed: ${e.message}`, true));
+window.visionCheck = { run, detectors: () => ({ main, mp }) };
+say(unavailable() ? `RF-DETR can't run here (${unavailable()}): the detector should fall back to MediaPipe.` : "Ready. Choose pictures (or pass ?images=) and press Run.", !!unavailable());
+if (q.has("images") && q.has("run")) $("#run").click();
+</script>
+</body>
+</html>

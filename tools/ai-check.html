@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI survey check</title>
+<style>
+  body{font:13px ui-monospace,monospace;background:#111;color:#ddd;padding:12px;margin:0}
+  h3{margin:4px 0 10px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin-bottom:12px}
+  figure{margin:0;display:table} figcaption{display:table-caption;caption-side:bottom;color:#9ab;margin-top:3px}
+  canvas{display:block;background:#000;max-width:100%}
+  table{border-collapse:collapse} td,th{padding:2px 10px 2px 0;vertical-align:top;text-align:left}
+  .pass{color:#6d6} .fail{color:#f66} .dim{color:#888}
+  pre{white-space:pre-wrap;color:#aaa}
+</style>
+<h3>AI survey check: the real capture's twin, a fake Claude</h3>
+<p class="dim">Imports a capture through the server (/house-files/, newest first, or ?project=ID), renders the survey's views with
+the splat twin (level, and down at the floor or up at the ceiling where a level camera misses them), answers each room's
+request with a canned Claude that boxes the capture's own objects (RoomPlan furniture, the fan, curtains, stairs) as a model
+would without the scan's depth (their 3D boxes projected, edges jittered), and lifts those boxes to 3D with the twin's depth.
+The map compares where the boxes landed (dots) with the objects' footprints (outlines), and shows the floor (red) and ceiling
+(violet) no view saw. Nothing is sent anywhere. Optional: &amp;rooms=r1,r2 &amp;jitter=0.1 &amp;sink=URL (posts the pictures as PNG).</p>
+<table id="checks"></table>
+<div class="row">
+  <figure><canvas id="ortho" width="900" height="700"></canvas><figcaption id="orthoCap">orthophoto: footprints (outlines), lifted landmarks (dots), hazards (rings), view spots (yellow squares: planned, cyan: added from other spots where the floor or ceiling fell short; their headings level yellow, down pink, up violet), unseen floor (red) and ceiling (violet)</figcaption></figure>
+</div>
+<div class="row">
+  <figure><canvas id="views" width="1536" height="288"></canvas><figcaption>the views Claude was sent, with the boxes it answered</figcaption></figure>
+</div>
+<table id="items"></table>
+<pre id="log"></pre>
+<script type="module" src="./ai-check.js"></script>

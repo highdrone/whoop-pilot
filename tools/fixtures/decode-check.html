@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Goggles decode check</title>
+<style>body{font:13px ui-monospace,monospace;background:#111;color:#ddd;padding:12px}canvas{width:480px;border:1px solid #444;display:block;margin:8px 0}pre{white-space:pre-wrap}</style>
+<h3>Goggles 3 sample: can this browser's decoder start on it?</h3>
+<pre id="log"></pre>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script type="module">
+const out = [];
+const log = (...a) => { out.push(a.join(" ")); document.getElementById("log").textContent = out.join("\n"); };
+window.result = { done: false, log: out };
+try {
+  const { nalUnits } = await import("/app/js/goggles/h264.js");
+  const { bootstrapUnits } = await import("/app/js/goggles/bootstrap.js");
+  const { H264Player } = await import("/app/js/goggles/player.js");
+  const buf = new Uint8Array(await (await fetch("/tools/fixtures/goggles-sample.h264")).arrayBuffer());
+  const nals = nalUnits(buf);
+  // access units as the goggles send them: [slice, SEI, AUD] per frame, parameter sets as their own unit
+  const aus = [];
+  let cur = [];
+  for (const n of nals) {
+    const s = n.start - (n.start >= 4 && buf[n.start - 4] === 0 ? 4 : 3);
+    if ((n.type === 1 || n.type === 7) && cur.length) { aus.push(cur); cur = []; }
+    cur.push({ type: n.type, bytes: buf.subarray(s, n.end) });
+    if (n.type === 8) { aus.push(cur); cur = []; }
+  }
+  if (cur.length) aus.push(cur);
+  const cat = (parts) => { const o = new Uint8Array(parts.reduce((s, p) => s + p.length, 0)); let i = 0; for (const p of parts) { o.set(p, i); i += p.length; } return o; };
+  const units = aus.map((a) => cat(a.map((n) => n.bytes)));
+  log("units:", aus.map((a) => a.map((n) => n.type).join("/")).join("  "));
+  const nal = (t) => { const n = nals.find((x) => x.type === t); return buf.subarray(n.start, n.end); };
+  const spsNal = nal(7), ppsNal = nal(8), firstNal = nal(1);
+  const variants = bootstrapUnits(spsNal, ppsNal, firstNal);
+  const codec = "avc1." + [spsNal[1], spsNal[2], spsNal[3]].map((x) => x.toString(16).padStart(2, "0")).join("");
+  log("codec", codec, "variants:", variants.map((v) => `${v.name} ${v.data.length}B`).join(", "));
+  const pFrames = units.filter((u, i) => aus[i].some((n) => n.type === 1));
+  // start the stream at the first P that follows the parameter sets, as the player would after them
+  const ctx = document.getElementById("c").getContext("2d");
+  window.result.variants = {};
+  for (const hw of ["no-preference", "prefer-hardware", "prefer-software"]) {
+    const sup = await VideoDecoder.isConfigSupported({ codec, hardwareAcceleration: hw });
+    if (!sup.supported) { log(hw, "not supported"); continue; }
+    for (const v of variants) {
+      const r = await new Promise((resolve) => {
+        let decoded = 0, err = null;
+        const dec = new VideoDecoder({ output: (f) => { decoded++; ctx.drawImage(f, 0, 0); f.close(); }, error: (e) => (err = String(e.message || e)) });
+        dec.configure({ codec, optimizeForLatency: true, hardwareAcceleration: hw });
+        let ts = 0;
+        try {
+          dec.decode(new EncodedVideoChunk({ type: "key", timestamp: ts, data: v.data }));
+          for (const f of pFrames) { ts += 16667; if (dec.state === "configured") dec.decode(new EncodedVideoChunk({ type: "delta", timestamp: ts, data: f })); }
+        } catch (e) { err = err || String(e.message || e); }
+        const fin = () => { try { dec.close(); } catch {} resolve({ decoded, err }); };
+        dec.state === "configured" ? dec.flush().then(fin, (e) => { err = err || String(e.message || e); fin(); }) : fin();
+      });
+      window.result.variants[`${hw}/${v.name}`] = r;
+      log(`${hw.padEnd(16)} ${v.name.padEnd(13)} decoded ${r.decoded}/${pFrames.length + 1} ${r.err ? "ERROR " + r.err : "ok"}`);
+    }
+  }
+  let n = 0;
+  const player = new H264Player({ onFrame: (f) => { n++; ctx.drawImage(f, 0, 0); f.close(); } });
+  for (let loop = 0; loop < 3; loop++) for (const u of units) { player.push(u); await new Promise((r) => setTimeout(r, 17)); }
+  await new Promise((r) => setTimeout(r, 1000));
+  window.result.player = { decoded: n, stats: player.stats, lastError: player.lastError };
+  log("H264Player (3 loops of the real unit order):", n, "frames", JSON.stringify(player.stats), player.lastError || "");
+} catch (e) {
+  log("PAGE ERROR", e.stack || e);
+}
+window.result.done = true;
+</script>

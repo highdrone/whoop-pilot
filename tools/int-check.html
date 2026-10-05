@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wave C integration check</title>
+<style>
+  body{font:13px ui-monospace,monospace;background:#111;color:#ddd;padding:12px;margin:0}
+  h3{margin:4px 0 10px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin-bottom:12px}
+  figure{margin:0;display:table} figcaption{display:table-caption;caption-side:bottom;color:#9ab;margin-top:3px}
+  canvas{display:block;background:#000;max-width:100%}
+  table{border-collapse:collapse} td{padding:2px 10px 2px 0;vertical-align:top}
+  .pass{color:#6d6} .fail{color:#f66} .dim{color:#888}
+  pre{white-space:pre-wrap;color:#aaa}
+</style>
+<h3>Wave C integration: the whole stack flying a patrol in the house twin</h3>
+<p class="dim">Runs under tools/whoop.mjs (the capture comes from /house-files/). Wires what main.js will: the voxel map, the simulator in the
+splat twin (augmented, lens error), splat localization (fused), live depth, avoidance and change detection, the flight memory, Claude's
+checks (a fake Claude: no key, no network) and the mission runner; then flies patrols for &amp;seconds=90 of flight with a box and a closed
+door added mid-flight and a person walking about. Query: &amp;capture=project id &amp;seconds=90 &amp;det=detector|truth &amp;cache=1 (reuse the
+stored voxels and position database) &amp;person=0 (nobody about) &amp;rate=0.33 (the simulated world at a third of the wall clock's speed, so the
+GPU keeps up as on a faster machine; 1: real time, the window visible) &amp;seed=11 &amp;save=URL (POST /save?name=c-int-*: pictures and results;
+&amp;tag=c-int-sealed-1 names them) &amp;scenario=sealed (fly to &amp;from=Living room, then every doorway into &amp;room=Room 3 is closed: look
+into it, then patrol; both must say it couldn't be checked, touching nothing) &amp;load=4.2 (the machine's load average, kept with the result)
+&amp;claudeConf=0.7 (how sure the fake Claude is that a suspected change is no change; return home passes one at 0.8 or more)
+&amp;trace=1 (every control tick in the air: the setpoint through each safety layer, the truth and the estimate) &amp;askfix=0 (vision
+relocalizes only when lost, as nav/splatloc.js does until it reads the localizer's needFix()). A run whose simulator camera falls back to the
+simple one, or with no vision fix in its first 10 s of flight, stops and fails. Also checked: the height in the air (p95 under 0.12 m, 97% within
+2.5 σz), with the vision fixes' own height error; the door readings are in result.flight.scene. window.result holds it all.</p>
+<table id="checks"></table>
+<div class="row">
+  <figure><canvas id="fpv" width="640" height="480"></canvas><figcaption id="fpvCap">drone camera (the simulator's augmented twin frame)</figcaption></figure>
+  <figure><canvas id="map" width="720" height="720"></canvas><figcaption>truth (white), estimate (green), path (blue), box and closed door (brown/red), temporary obstacles (amber), changes (x), person (cyan)</figcaption></figure>
+</div>
+<div class="row">
+  <figure><canvas id="vox" width="480" height="480"></canvas><figcaption>3D map at 1.0 m above the floor after the flights: free (light), unknown (grey), occupied (dark), changed by flight (green)</figcaption></figure>
+  <figure><canvas id="shot" width="640" height="480"></canvas><figcaption id="shotCap">camera when a change was reported</figcaption></figure>
+</div>
+<pre id="log"></pre>
+<script type="module" src="./int-check.js"></script>

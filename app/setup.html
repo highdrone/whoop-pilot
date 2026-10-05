@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Whoop Pilot Setup</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <style>
+    :root { --bg: #0b0f14; --panel: #121821; --line: #243041; --text: #e6edf5; --muted: #8a97a8; --accent: #ffd84d; --bad: #fca5a5; color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    main { max-width: 820px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+    h1 { font-size: 26px; margin: 0; }
+    h2 { font-size: 19px; margin: 36px 0 10px; padding-top: 18px; border-top: 1px solid var(--line); }
+    h3 { font-size: 15px; margin: 18px 0 6px; }
+    p, li { color: #cfd8e3; }
+    .lead { color: var(--muted); margin-top: 4px; }
+    code, kbd { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; color: var(--text); }
+    ol, ul { padding-left: 22px; }
+    li { margin: 5px 0; }
+    .box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin: 14px 0; }
+    .warn { border-color: rgba(252,165,165,0.4); }
+    .warn strong { color: var(--bad); }
+    a { color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+    th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; }
+    .dl { display: inline-block; margin: 6px 0; padding: 8px 14px; border-radius: 10px; background: var(--accent); color: #1a1400; font-weight: 700; text-decoration: none; border: 0; font: inherit; cursor: pointer; }
+    .steps li { margin: 8px 0; }
+    .mat { display: block; width: min(100%, 360px); margin: 10px 0; background: #fff; border-radius: 10px; }
+    @media (prefers-color-scheme: light) {
+      :root { --bg: #f3f5f8; --panel: #ffffff; --line: #d4dce5; --text: #0f172a; --muted: #556274; --accent: #a16207; --bad: #b91c1c; color-scheme: light; }
+      p, li { color: #334155; }
+      .dl { color: #fff; }
+    }
+    @media print {
+      body > main > :not(#pad-mat) { display: none !important; }
+      #pad-mat > :not(.mat) { display: none !important; }
+      .mat { width: 160mm; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header><img src="icon.svg" width="34" height="34" alt=""><h1>Whoop Pilot setup</h1></header>
+  <p class="lead">BetaFPV Meteor65 Pro II (DJI O4) · DJI Goggles 3 · RadioMaster TX15 (EdgeTX) · Mac + Chrome. About 20 minutes, one time, plus a capture of your house if you want missions. Nothing to solder, no parts to buy.</p>
+
+  <div class="box">
+    <strong>How it fits together.</strong> The app on your Mac watches the drone's video, understands your voice (Claude), and decides stick movements.
+    It sends those to your TX15 over the USB-C cable; a small script on the radio feeds them into the normal ELRS link, but only while your AI switch is on.
+    Flip the switch off, or move a stick, and you're flying again.
+  </div>
+
+  <h2>1. Radio: install the bridge script</h2>
+  <p><a class="dl" href="/radio/SCRIPTS/MIXES/aibrg.lua" download="aibrg.lua">Download aibrg.lua</a></p>
+  <ol>
+    <li>Plug the TX15 into the Mac, choose <b>USB Storage</b>, and copy <code>aibrg.lua</code> into <code>SCRIPTS/MIXES/</code> on the radio's SD card. Eject, unplug.</li>
+    <li><b>SYS → Hardware → Serial ports → USB-VCP</b>: set to <b>LUA</b> (it's usually CLI; set it back to CLI whenever something else needs the radio's USB serial, such as flashing ELRS through the radio).</li>
+    <li>EdgeTX 3.0 hides the <b>Mixer Scripts</b> page by default: in the model's <b>Model Settings → Enabled Features</b>, turn <b>Mixer Scripts</b> on.</li>
+    <li>Select your Meteor65 model. On its <b>Mixer Scripts</b> page, add <code>aibrg</code> and set its inputs:
+      <table>
+        <tr><th>Input</th><th>Set to</th></tr>
+        <tr><td>Ail, Ele, Thr, Rud</td><td>the model's inputs <b>I0–I3</b> (Ail, Ele, Thr, Rud), so trims carry over</td></tr>
+        <tr><td>AI sw</td><td>a switch you can find by feel with goggles on. On a TX15, <b>SD</b>: down = AI allowed. (SF is a spring-loaded button there, so it can't hold AI on.)</td></tr>
+        <tr><td>PTT</td><td>optional: a momentary button to talk to the drone from the radio. On a TX15, <b>SF</b>.</td></tr>
+      </table>
+    </li>
+    <li><b>Mixes</b>: keep your normal line on each channel and add a <b>second</b> line under it:
+      <table>
+        <tr><th>Channel</th><th>Source</th><th>Weight</th><th>Switch</th><th>Multiplex</th></tr>
+        <tr><td>CH1 Ail</td><td>aibrg <code>AIro</code></td><td>100</td><td>SD↓</td><td>Replace</td></tr>
+        <tr><td>CH2 Ele</td><td>aibrg <code>AIpi</code></td><td>100</td><td>SD↓</td><td>Replace</td></tr>
+        <tr><td>CH3 Thr</td><td>aibrg <code>AIth</code></td><td>100</td><td>SD↓</td><td>Replace</td></tr>
+        <tr><td>CH4 Rud</td><td>aibrg <code>AIya</code></td><td>100</td><td>SD↓</td><td>Replace</td></tr>
+        <tr><td>Flight-mode channel (CH6 on BetaFPV's model)</td><td>MAX</td><td>−100 for the ANGLE position (SA up on BetaFPV's model)</td><td>SD↓</td><td>Replace</td></tr>
+      </table>
+      The last line puts Betaflight in ANGLE (self-level) whenever the AI is on, which the AI needs. This assumes the usual AETR channel order and that ARM stays on its own switch, which the script never touches.
+    </li>
+    <li>Check on the bench, props off, in the radio's channel monitor: with SD up, everything behaves as before. With SD down and the app closed, the sticks still move CH1–4 (the script passes them through) and CH6 jumps to the ANGLE position.</li>
+    <li>Plug USB-C into the Mac and choose <b>USB Serial (VCP)</b>. The radio keeps transmitting normally in this mode.</li>
+  </ol>
+  <h3>Betaflight / ELRS</h3>
+  <ul>
+    <li>The AI flies in <b>ANGLE</b> (self-level) mode. Make sure you have a switch for it, or use the <code>AImd</code> line above.</li>
+    <li>In the ELRS Lua script on the radio, set <b>Telem Ratio</b> to 1:8 (or 1:4) so battery and heading arrive several times a second.</li>
+    <li>On the radio's Telemetry page, run <b>Discover new sensors</b> once with the quad powered, so the script can read battery and heading.</li>
+  </ul>
+
+  <h2 id="video">2. Video: Goggles 3 straight into the app</h2>
+  <p>Whoop Pilot reads the Goggles 3 live view itself; there's no viewer app or driver. Whoop Pilot's local server (<code>tools/whoop.mjs</code>, Node.js, started by <code>start.command</code>) talks to the goggles over USB-C or over the goggles' own Wi-Fi and hands the H.264 to the app on the same address, which decodes it. The server does this part because Chrome refuses the goggles' USB network interface: it's USB class 0xE0 (wireless controller), one of the WebUSB spec's protected interface classes, and Chromium blocks those for every web page (<code>WebUsbServiceImpl::GetProtectedInterfaceClasses</code>), so no page can claim it.</p>
+  <h3>USB-C (recommended: least delay, and it charges the goggles)</h3>
+  <ol>
+    <li>Once: install Node.js with <a href="https://brew.sh" target="_blank" rel="noopener">Homebrew</a>: <code>brew install node</code>.</li>
+    <li>Double-click <code>start.command</code>. One window, one server: the app, the goggles video, the flight recorder and your captures. Keep the window open; closing it stops Whoop Pilot.</li>
+    <li>Goggles on, drone powered and linked, goggles showing its camera. In the goggles' menu (press the 5D button): <b>Settings → About → OTG Wired Connection</b> off (the default; that mode is for DJI Assistant and footage export, and there's no live view on the cable then), and <b>Share Liveview to Mobile Device via Wi-Fi</b> <b>on</b> (push the 5D button backward for the shortcut menu): despite the name it also turns on the live view over USB (SquirrelReceiver and Goggles3-USB-Livestream need it on for wired too; the manual's “no wired connection while it's on” is about a phone on the cable).</li>
+    <li>Connect the goggles' USB-C port to the Mac with a <b>data</b> cable (charge-only cables won't work).</li>
+    <li>In Whoop Pilot: <b>Real drone</b>. The app asks the server for the goggles while the goggles panel is showing and connects by itself; <b>Connect goggles</b> does the same right away.</li>
+  </ol>
+  <h3>Wi-Fi instead of USB</h3>
+  <p>The goggles share the same live view over their own Wi-Fi hotspot. No cable, but more delay than USB and the goggles don't charge.</p>
+  <ol>
+    <li>On the goggles, push the 5D button <b>backward</b> from the FPV view for the shortcut menu and turn on <b>Share Liveview to Mobile Device via Wi-Fi</b>. It uses 5.8 GHz, so it's unavailable where that band isn't allowed (Japan, says the manual).</li>
+    <li>Join the goggles' network from the Mac's Wi-Fi menu. The manual (Liveview Sharing → Wireless Connection with Mobile Device) only covers joining through DJI Fly on a phone, which finds the goggles and joins for you (hold the goggles' power button for 2 s when prompted the first time); it doesn't give the network's name or password or say where to read them, so we can't either. While on that network the Mac has no internet unless it has another connection (Ethernet), and Claude needs internet.</li>
+    <li>Start Whoop Pilot from a terminal with <code>--wifi</code>: <code>./start.command --wifi</code> (or <code>cd tools && node whoop.mjs --wifi</code>). The goggles are at 192.168.2.1; <code>--peer IP</code> overrides.</li>
+    <li><b>Connect goggles</b> in the app as above.</li>
+  </ol>
+  <h3>What the goggles status means</h3>
+  <ul>
+    <li><b>Server not running</b>: <code>/goggles/status</code> doesn't answer: <code>start.command</code> isn't running or Node.js is missing (its window says so; <code>brew install node</code>).</li>
+    <li><b>No goggles on USB</b>: the server runs but sees no DJI device. Data cable? Goggles on? OTG Wired Connection off?</li>
+    <li><b>The goggles don't answer</b>: the link is up but the goggles ignore the LiveView handshake. Usually one of: the drone is off or not linked (nothing to share); the goggles are asleep, since their proximity sensor turns the screen off when they're not on your head (manual, Overview) and the shared view stops with it (wear them, or rest them so the sensor is covered); Real View or the album is open, which the manual says pauses sharing; the wrong settings for the transport (both: Share Liveview to Mobile Device via Wi-Fi on; USB: OTG Wired Connection off; Wi-Fi: the Mac on the goggles' network).</li>
+    <li><b>Connected, but no picture</b>: the goggles answer but send no video. Power the drone and check the goggles show its camera.</li>
+    <li><b>Goggles went quiet</b>: the stream stopped; the app reconnects on its own.</li>
+    <li><b>Starting the decoder</b>: video arrives. The goggles never send a keyframe (they refresh the picture gradually), so the app bootstraps its decoder with one instead.</li>
+    <li><b>The decoder took none of the start pictures</b>: Chrome refused every start picture, on the hardware and the software decoder. Click <b>Connect goggles</b> to try again; if it keeps happening, replug the drone battery.</li>
+  </ul>
+  <p><b>Diagnostics:</b> close the <code>start.command</code> window first (the goggles serve one client), then <code>cd tools && node goggles.mjs probe</code> (add <code>--wifi</code> for Wi-Fi) connects for 9 s and reports packets, resend requests, losses, frames, and whether video kept flowing past the point where the old ACK stalled. <code>node goggles.mjs capture 10</code> records 10 s to <code>goggles-capture.h264</code> and describes the stream; it also writes <code>goggles-capture-bootstrapped.h264</code>, which <code>ffplay</code> can play from the start (<code>analyze goggles-capture.h264</code> redoes both for a saved file). Without goggles, both say so and stop.</p>
+  <p><b>Try direct USB</b> (Settings → Camera) asks Chrome for the goggles directly. On Goggles 3 Chrome answers that the interface is protected, as expected; the option is there for other goggles or firmware that expose the network interface differently.</p>
+  <p><b>Other goggles</b> (N3, 2, Integra): show DJI Fly's live view on your phone, mirror the phone to the Mac (iPhone Mirroring, AirPlay or scrcpy), and use <b>Capture a window…</b> in Settings → Camera, then <b>Crop to video</b>.</p>
+  <p><b>Field of view / tilt:</b> the O4 lens is a 159° diagonal fisheye, 127° across at 4:3 (the default). Set your camera's uptilt (15–35° on the Meteor65 Pro II's mount) if it's far from 20°. Turn and rotation details are learned automatically in flight.</p>
+  <p class="lead">Protocol details for the LiveView session come from <a href="https://github.com/soldnenz/dji-goggles-lab" target="_blank" rel="noopener">dji-goggles-lab</a> (reimplemented from its documentation; that repo has no license file, so none of its code is used) and <a href="https://github.com/planktonwhc/orbit-rs" target="_blank" rel="noopener">orbit-rs</a> (MIT). Goggles menu names and behaviour are from the DJI Goggles 3 user manual (v1.0, 2024-05).</p>
+
+  <h2>3. The app</h2>
+  <ol>
+    <li>Double-click <code>start.command</code> in the whoop-pilot folder. It starts Whoop Pilot's server at <code>http://localhost:8790/app/</code> (the window prints the address) and opens it in Chrome. Without Node.js it says so and runs the simulator only: no goggles video, recorder or house import.</li>
+    <li>Chrome menu → <b>Cast, save and share → Install page as app</b> (or the install icon in the address bar) gives it its own window and Dock icon.</li>
+    <li><b>Settings → Brain</b>: paste a Claude API key from <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>. It's stored only in this browser. Without a key, simple commands still work offline.</li>
+    <li>Fly the <b>Simulator</b> first. Hold <kbd>Space</kbd> and say “take off”, then “find the cat”.</li>
+    <li>Switch to <b>Real drone</b> → <b>Connect radio (USB)</b> (pick the radio's serial port) and <b>Connect goggles</b>. The pre-flight list turns green as things connect.</li>
+    <li>Optional: <b>Record</b> (top right) keeps a flight's goggles video, telemetry and commands on this Mac; <b>Settings → Recordings</b> lists them.</li>
+  </ol>
+
+  <h2 id="house">4. Your house</h2>
+  <p>With a capture of your house, Whoop Pilot knows the rooms by name, plans its way through the doors, keeps away from walls, fans and stairs, and flies missions: <b>Go to</b> a room or place, <b>Look in</b> a room, <b>Find people</b>, <b>Check on pets</b>, <b>Patrol</b>, <b>Return home</b>. You can try all of it in a simulator of your own house first.</p>
+  <h3>Capture</h3>
+  <ul>
+    <li>Capture with SiteSpec (or Spacial). Walk every room the drone may fly in, slowly, with the doorways between them; include ceiling fans and stairs.</li>
+    <li><b>Leave the AprilTags up.</b> Tag 0 on the floor becomes the home pad (where the drone takes off and lands), and the tags give the scan its true size.</li>
+    <li><b>Do the tape checks</b> in SiteSpec (two or three long wall-to-wall distances). The drone keeps about 30 cm from walls; a scan 1% off is 6 cm off across a 6 m room.</li>
+    <li>Let SiteSpec finish the project so it draws the floor plan (rooms, doors).</li>
+  </ul>
+  <h3>Import and check</h3>
+  <ol>
+    <li><b>Settings → House</b> lists the captures in your SiteSpec and Spacial project folders, newest first. Click <b>Use this capture</b>. It copies the floor plan and the 3D scan into this browser (they stay on this Mac) and builds the flight map; it takes a few seconds. <b>Choose a folder…</b> takes a capture from somewhere else.</li>
+    <li>Read what the import says: whether the scan and the floor plan agree in size, which doorways are wide enough, and anything to fix in SiteSpec.</li>
+    <li>Rename the rooms there (Claude and the mission buttons use the names: “look in the kitchen”).</li>
+    <li>On the map (under the camera view; <b>⇄</b> makes it large): <b>Home</b> moves the home pad (drag to set the way the drone faces), <b>Landmark</b> names a place (“cat bed”), <b>No-fly</b> draws a zone the drone must never enter, <b>Fly here</b> sends it to a spot.</li>
+    <li>Simulator → <b>My house</b>: the camera shows your 3D scan, with people, a cat and a dog walking around (<b>People &amp; pets</b> turns them off). Try every mission there first.</li>
+  </ol>
+  <h3>Alerts</h3>
+  <p><b>Settings → Alerts</b>: allow Mac notifications, and optionally enter an ntfy topic to get alerts on your phone (install the free ntfy app and subscribe to the same topic). Anyone who knows a topic can read its alerts and pictures, so use <b>New private topic</b>. What missions find also shows in <b>Events</b> next to the mission log, with a picture.</p>
+  <div class="box"><strong>What “guard” really means.</strong> Whoop Pilot is supervised, not a security camera. Someone puts in a charged battery and arms the drone with the radio: the app never arms it. A sortie lasts about 3 minutes (the pack gives about 4 minutes of flight, and missions keep a margin to get home); the O4 also overheats after about 2.5 minutes sitting armed on the ground. The Mac, the radio and the goggles must be on, with this window visible.</div>
+
+  <h2 id="first-flight">5. First flight with your house, step by step</h2>
+  <p>The same steps are in the app (Settings → House → First flight, step by step).</p>
+  <ol class="steps">
+          <li><b>Import the capture</b> of your house (Settings → House).</li>
+          <li><b>Build the 3D map and read the coverage</b>: it lists the places the scan missed and how to rescan them. The drone never flies through space the scan didn't see.</li>
+          <li><b>Optional: ask Claude to survey the house</b>: room names, landmarks and hazards like ceiling fans, shown with their cost before anything is sent.</li>
+          <li><b>Set the home pad</b> with the map's Home tool and tape the printed mat there, its arrow the way the drone faces; keep 0.5 m around it clear.</li>
+          <li><b>Rehearse in the simulator</b>: My house → Rehearse the real flight, then Look in a room and Return home.</li>
+          <li><b>Prepare before the battery goes in</b>: Real drone → Ready to fly? → Prepare everything now (the models and the position database).</li>
+          <li><b>Record a pad turn and a short flight by hand</b>: Record, battery in, “The drone is on its home pad”, one slow full turn by hand on the pad, a minute's hover flown by hand, land on the pad, stop Record. Be quick: the O4 overheats after about 2.5 minutes on the ground.</li>
+          <li><b>Calibrate the camera from that recording</b>: Settings → House → Camera calibration → From a recorded flight → Calibrate from it, then Save it.</li>
+          <li><b>Check localization on that recording</b>: Settings → Recordings → Check localization; go on only when it passes.</li>
+          <li><b>Pad check</b> with the next battery: press “The drone is on its home pad”; the camera must match the 3D scan there.</li>
+          <li><b>Measure braking</b> in Full auto, in your largest open room (Settings → Flight); if it says there isn't room, missions stay at 0.3 m/s.</li>
+          <li><b>First mission in Co-pilot</b>: “Look in” one room, you hold the height, thumbs on the sticks. Full auto only after two good Co-pilot flights.</li>
+        </ol>
+  <div class="box"><strong>Honest limits.</strong> Flights are supervised and about 3 minutes long. The app never arms the drone: you do, with the radio. Keep the app's window visible while it flies. In real mode the app opens with <b>Ready to fly?</b>: what to do before the battery goes in, and what needs it in (the O4 camera overheats after about 2.5 minutes on the ground). Missions wait until nothing in it blocks them; voice moves still work.</div>
+  <section id="pad-mat">
+    <h3>The home pad mat</h3>
+    <p>Print this at 100% (no scaling) and tape it to the floor where you set the home pad on the map, the arrow pointing the way the pad's arrow points on the map. Put the drone in the square, its nose at the arrow.</p>
+    <svg class="mat" viewBox="0 0 160 160" role="img" aria-label="Pad mat: a 10 cm square with an arrow for the drone's nose">
+      <rect x="1" y="1" width="158" height="158" rx="6" fill="#fff" stroke="#999" stroke-width="0.5" stroke-dasharray="3 2"/>
+      <rect x="30" y="40" width="100" height="100" rx="8" fill="none" stroke="#111" stroke-width="2"/>
+      <path d="M80 8 L95 30 L86 30 L86 40 L74 40 L74 30 L65 30 Z" fill="#111"/>
+      <text x="80" y="95" text-anchor="middle" font-size="9" font-family="sans-serif" fill="#111">Whoop Pilot home pad</text>
+      <text x="80" y="108" text-anchor="middle" font-size="6" font-family="sans-serif" fill="#555">nose toward the arrow · square 10 cm</text>
+    </svg>
+    <button class="dl" type="button" onclick="print()">Print the pad mat</button>
+  </section>
+
+  <h2>6. First real flight, by hand and by voice</h2>
+  <div class="box warn"><strong>Props spin fast even on a whoop.</strong> Fly in an open room, keep faces and pets back for the first flights, and keep your thumbs near the sticks.</div>
+  <ol>
+    <li>Start in <b>Co-pilot</b> mode: you hold height with the throttle, the AI steers. This is the reliable mode.</li>
+    <li>Arm, take off by hand to about waist height, then flip <b>SD down</b> (your AI switch).</li>
+    <li>Hold <kbd>Space</kbd> (or your PTT button) and say “look around and tell me what you see”.</li>
+    <li>Then try “turn left 90”, “find the cat”, “go to the kitchen”. When it asks you to go lower or higher, do it with the throttle.</li>
+    <li><b>Take over any time</b>: flip SD up, or just move a stick (roll/pitch/yaw past ~30%, or the throttle about 1/8 of its travel). <kbd>Esc</kbd> or Stop in the app makes it hold still.</li>
+    <li>If the app stops talking to the radio for 0.3 s, the radio beeps and vibrates and gives you the sticks back (in full-auto it first descends slowly, then idles). Flip SD up and down again to re-enable the AI.</li>
+  </ol>
+  <h3>Missions in your house</h3>
+  <ol>
+    <li>Put the drone on its home pad, facing the way the pad's arrow points on the map, and click <b>The drone is on its home pad</b> in the Missions panel (it only works on the ground). That's where its position estimate starts, and on the real drone the camera is checked against the 3D scan there (the pad check). Until then the video shows <b>NO POSITION · SET ON PAD</b>: the drone still flies your commands, but nothing keeps it off walls and no-fly zones.</li>
+    <li>Arm with the radio, flip SD down, and click a mission (or say it). In co-pilot mode it asks you to take off and land; it steers.</li>
+    <li>It plans around the map, checks the battery before every leg, and holds still (co-pilot: asks you to take over) when it loses track of where it is. Stop, <kbd>Esc</kbd>, the AI switch or any stick takes over at once.</li>
+    <li>While it flies, the video says why it is slow or holding back, and how sure it is of its position (<b>POS ±</b>, <b>VISION</b>). When it notices something the 3D scan doesn't have, <b>possible change · check</b> appears on the video: open it, look at the two pictures and decide (Confirm, Dismiss, or It was a person or pet). A change nobody decides on is treated as an obstacle.</li>
+  </ol>
+  <h3>Try it in the simulator first</h3>
+  <p>Simulator → <b>My house</b> → <b>Rehearse the real flight</b>: the simulated drone then finds its position from its own camera (with the O4's blur, noise and a slightly wrong lens), live depth and the person detector run on its pictures, and missions start only when the real drone's vision would let them (the <b>Ready to fly?</b> list shows what is missing), at the real drone's lower speed limits. The map's layers show where the scan never saw (pink), where the drone flew (green to red as it grows unsure), the route ahead, people and obstacles; <b>3D</b> shows the house in 3D, and <b>History</b> (next to Events) every flight's path, what it saw and what changed.</p>
+  <p><b>Full auto</b> (the AI also flies height, take-off and landing) is experimental: a whoop has no height sensor, so height is estimated from the camera. Try it in the simulator first, then over carpet.</p>
+
+  <h2>Troubleshooting</h2>
+  <ul>
+    <li><b>“Radio: no script”</b>: USB-VCP isn't set to LUA, the script isn't added on the model's Mixer Scripts page, or you picked something other than USB Serial (VCP) when plugging in.</li>
+    <li><b>AI switch on but nothing moves</b>: the Replace mix lines must use the same switch position as the <code>AI sw</code> input. Watch the Sticks panel: yellow dots are what goes to the quad.</li>
+    <li><b>Turns overshoot at first</b>: it learns your real turn rate after a few turns. You can also enter your Betaflight rates in Settings → Flight.</li>
+    <li><b>Drifts a lot</b>: it holds position using the camera image, which needs light and texture (not a blank wall). Fly in well-lit, furnished rooms.</li>
+    <li><b>Mission stopped when I switched windows</b>: browsers slow down hidden tabs, so the app stops missions when hidden. Keep it visible (installing it as an app helps).</li>
+    <li><b>“Server not running” although its window is open</b>: look at that window. Usually the <code>usb</code> package didn't install (<code>cd tools && npm install</code>), or a second copy of <code>start.command</code> found Whoop Pilot already running and quit, which is fine.</li>
+    <li><b>My house doesn't show in Settings → House</b>: Whoop Pilot lists the projects in your SiteSpec Projects and Spacial Projects folders. Use <b>Choose a folder…</b> for one elsewhere, and pick the project folder (not its outputs folder).</li>
+    <li><b>Missions say “I don't know where I am”</b>: put the drone on the home pad and click <b>The drone is on its home pad</b>.</li>
+  </ul>
+</main>
+</body>
+</html>

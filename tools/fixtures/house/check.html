@@ -1,0 +1,85 @@
+<!doctype html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>House check</title>
+<style>
+  body { font: 14px/1.4 ui-monospace, Menlo, monospace; margin: 16px; background: #fff; color: #111; }
+  @media (prefers-color-scheme: dark) { body { background: #111; color: #eee; } }
+</style>
+<!-- The house modules in Chrome, against this fixture: copies it into OPFS and imports it through a real
+     FileSystemDirectoryHandle (the path showDirectoryPicker takes), imports it again through fetch, then saves,
+     lists, reloads (map from the occupancy cache), plans and deletes in the real OPFS store. Served by start.command at
+     http://localhost:8790/tools/fixtures/house/check.html; it leaves nothing behind. -->
+<pre id="out">running…</pre>
+<script type="module">
+  import { importCapture } from "../../../app/js/house/import.js";
+  import { openStore } from "../../../app/js/house/store.js";
+  import { plan, roomCenter, patrolRoute } from "../../../app/js/house/planner.js";
+
+  const FILES = ["site.json", "project.json", "outputs/scene.json", "outputs/splat-centres.bin", "outputs/plans/house-rooms.json", "outputs/plans/house-orthophoto.json", "outputs/plans/manifest.json", "work/room/rooms.auto.json", "work/room/ai_scene.json", "work/room/iphone.json"];
+  const out = [], log = (k, v) => out.push(`${k}: ${typeof v === "string" ? v : JSON.stringify(v)}`);
+  const check = (ok, what) => {
+    log(ok ? "ok" : "FAIL", what);
+    if (!ok) failed++;
+  };
+  let failed = 0;
+  try {
+    const opfs = await navigator.storage.getDirectory();
+    const src = await opfs.getDirectoryHandle("house-check-src", { create: true });
+    for (const f of FILES) {
+      const parts = f.split("/");
+      let d = src;
+      for (const p of parts.slice(0, -1)) d = await d.getDirectoryHandle(p, { create: true });
+      const w = await (await d.getFileHandle(parts.at(-1), { create: true })).createWritable();
+      await w.write(await (await fetch(f)).arrayBuffer());
+      await w.close();
+    }
+    let t = performance.now();
+    const viaHandle = await importCapture(src);
+    log("import via directory handle (ms)", Math.round(performance.now() - t));
+    const viaFetch = await importCapture({ name: "fixture", read: async (p) => (FILES.includes(p) ? (await fetch(p)).arrayBuffer() : null) });
+    check(viaHandle.house.id === viaFetch.house.id && JSON.stringify(viaHandle.map.stats()) === JSON.stringify(viaFetch.map.stats()), "directory handle and fetch give the same house and map");
+    const { house, map } = viaHandle;
+    log("house", { id: house.id, name: house.name, rooms: house.rooms.map((r) => r.name), doors: house.doors.length, keepouts: house.keepouts.map((k) => k.kind), home: house.home });
+    log("checks", { planScale: house.checks.planScale, scale: house.checks.scale.scale, floors: house.checks.floors.map((f) => f.dz) });
+    log("map", map.stats());
+    check(house.tags.find((x) => x.id === 3).center[2] < 0.01 && Math.abs(house.tags.find((x) => x.id === 0).center[2] - 0.245) < 0.01, "tags 3 and 0 on their floors");
+    check(map.keepouts.some((k) => k.kind === "fan" && Math.hypot(k.x - 2.95, k.y - 2.92) < 0.25), "fan keep-out found");
+    t = performance.now();
+    const plans = house.rooms.map((r) => plan(map, [house.home.x, house.home.y], roomCenter(map, r.id), { sigma: 0.25 }));
+    log("plans home -> rooms (ms)", +(performance.now() - t).toFixed(1));
+    check(plans.every((p) => p.ok && p.minClearance >= 0.3), `plans to every room: ${plans.map((p) => (p.ok ? p.length.toFixed(2) + " m" : p.reason)).join(", ")}`);
+    check(patrolRoute(map, undefined, [house.home.x, house.home.y]).ok, "patrol");
+
+    const store = await openStore();
+    log("storage persisted", store.persisted);
+    await store.saveImport(viaHandle);
+    check((await store.listHouses()).some((h) => h.id === house.id), "saved and listed in OPFS /houses/");
+    t = performance.now();
+    const loaded = await store.loadHouse(house.id), m = await store.loadMap(loaded);
+    log("reload house + map from the cache (ms)", Math.round(performance.now() - t));
+    check(!m.stale && JSON.stringify(m.stats()) === JSON.stringify(map.stats()), "map from the occupancy cache matches");
+
+    const outs = await importCapture(await src.getDirectoryHandle("outputs"));
+    log("outputs folder picked directly", { frame: outs.house.frame, warnings: outs.warnings.map((w) => w.code) });
+    check(outs.house.frame.f === 0.9879 && outs.house.id === house.id && outs.warnings.some((w) => w.code === "outputs-folder"),
+      "outputs folder: f from beside the plans, same house, and a warning to pick the project folder");
+    await store.saveHouse({ ...loaded, home: { x: 1, y: 2, yaw: 0, source: "user" } });
+    await store.saveImport(await importCapture(src));
+    const again = await store.loadHouse(house.id);
+    check(again.home?.source === "user", "importing the capture again keeps the user's home pad");
+    await store.writeFile(house.id, "occupancy.bin", new Uint8Array(8));
+    t = performance.now();
+    const rebuilt = await store.loadMap(again);
+    log("rebuild the map from the stored splat centres (ms)", Math.round(performance.now() - t));
+    check(rebuilt.rebuilt && !rebuilt.stale && JSON.stringify(rebuilt.stats()) === JSON.stringify(map.stats()), "a damaged cache is rebuilt");
+    check(await store.deleteHouse(house.id), "deleted");
+    check(!(await store.listHouses()).some((h) => h.id === house.id), "gone from the list");
+    await opfs.removeEntry("house-check-src", { recursive: true });
+  } catch (e) {
+    failed++;
+    log("FAIL", e.stack ?? String(e));
+  }
+  document.getElementById("out").textContent = `${failed ? `${failed} FAILED` : "ALL OK"}\n\n${out.join("\n")}`;
+  document.title = failed ? "FAIL" : "PASS";
+</script>

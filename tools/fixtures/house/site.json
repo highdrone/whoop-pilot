@@ -1,0 +1,69 @@
+{
+ "version": 1,
+ "rooms": {},
+ "checks": [
+  {
+   "id": "t1",
+   "room_id": "r1",
+   "kind": "distance",
+   "measured_m": 4.4196,
+   "wall_id": null,
+   "a": [
+    0.5907642,
+    0.9879
+   ],
+   "b": [
+    4.993834499999999,
+    0.9879
+   ],
+   "label": "Width, side wall to side wall (front half) — 14′ 6″",
+   "created": 1790863163.3854542
+  },
+  {
+   "id": "t2",
+   "room_id": "r1",
+   "kind": "distance",
+   "measured_m": 5.8724799999999995,
+   "wall_id": null,
+   "a": [
+    3.35886,
+    -0.10728594
+   ],
+   "b": [
+    3.35886,
+    5.7614328
+   ],
+   "label": "Opposite wall to the chimney's brick face — 231.2″",
+   "created": 1790863163.3854542
+  },
+  {
+   "id": "t3",
+   "room_id": "r1",
+   "kind": "distance",
+   "measured_m": 6.05282,
+   "wall_id": null,
+   "a": [
+    1.38306,
+    -0.10195128
+   ],
+   "b": [
+    1.38306,
+    5.966916
+   ],
+   "label": "Opposite wall to the left alcove — 238.3″",
+   "created": 1790863163.3854551
+  }
+ ],
+ "saved": 1790863171.342586,
+ "scale_correction": {
+  "factor": 0.9879,
+  "applied": 1790863171.341674,
+  "checks": [
+   "t1",
+   "t2",
+   "t3"
+  ],
+  "capture": 0.7163078691473114,
+  "source": "checks"
+ }
+}

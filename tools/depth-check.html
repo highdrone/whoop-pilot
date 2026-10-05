@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Depth check</title>
+<style>
+  body{font:13px ui-monospace,monospace;background:#111;color:#ddd;padding:12px;margin:0}
+  h3{margin:4px 0 10px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin-bottom:12px}
+  figure{margin:0;display:table} figcaption{display:table-caption;caption-side:bottom;color:#9ab;margin-top:3px;max-width:420px}
+  canvas{display:block;background:#000;max-width:100%}
+  table{border-collapse:collapse} td{padding:2px 10px 2px 0;vertical-align:top}
+  .pass{color:#6d6} .fail{color:#f66} .dim{color:#888}
+  pre{white-space:pre-wrap;color:#aaa}
+</style>
+<h3>Live depth and change check</h3>
+<p class="dim" id="usage">Runs the app's live depth (vision/depth.js: Depth Anything V2 Small in its worker, aligned to the twin) and change
+detector (nav/changes.js) on the splat twin of a capture served under /house-files/. Query: &amp;project= (a capture folder name; default the
+newest), &amp;model=dav2s|dav2s-fp16, &amp;seconds= (patrol length, 60), &amp;only=load,align,change,door,approach,goggles, &amp;vox=0 (no 3D map), &amp;nobody=1 (the quiet patrol without the person standing about), &amp;cache=1 (keep the 3D map in OPFS), &amp;approachErr= (the share nav/avoid.js takes a new thing's depth to be off by; default AVOID.depthErr), &amp;brake= (how hard the drone really brakes in the approach, a share of what the cap assumes; 0.7), &amp;light=shadow|lamp|night (the house lit unlike the capture), &amp;people=0|only (skip, or run only, the patrol with people the detector misses), &amp;cast=stand|sit (only one of them), &amp;save= (an address that takes
+POST /save?name= for the screenshots), &amp;augment=1|nolens (the O4 video: blur, exposure, noise, JPEG, OSD, and a lens error unless nolens), &amp;poseErr= (m the localized pose wanders), &amp;zErr= (m the localized height is off the whole way), &amp;zSigma= (the height σ the frames say), &amp;dump= (an address that takes POST /dump?run=&amp;i= for every frame).</p>
+<table id="checks"></table>
+<div class="row">
+  <figure><canvas id="live" width="640" height="480"></canvas><figcaption id="liveCap">the drone camera (twin, with the obstacle)</figcaption></figure>
+  <figure><canvas id="rect" width="280" height="210"></canvas><figcaption>rectified (100° pinhole)</figcaption></figure>
+  <figure><canvas id="disp" width="280" height="210"></canvas><figcaption>model output (relative)</figcaption></figure>
+</div>
+<div class="row">
+  <figure><canvas id="aligned" width="280" height="210"></canvas><figcaption id="alignedCap">aligned live depth (m)</figcaption></figure>
+  <figure><canvas id="expected" width="280" height="210"></canvas><figcaption>the twin's empty-house depth</figcaption></figure>
+  <figure><canvas id="diff" width="280" height="210"></canvas><figcaption id="diffCap">nearer (red) / farther (blue) than expected</figcaption></figure>
+</div>
+<div class="row">
+  <figure><canvas id="plan" width="560" height="560"></canvas><figcaption id="planCap">the patrol, the obstacle (white square) and what was reported</figcaption></figure>
+</div>
+<pre id="log"></pre>
+<script type="module" src="./depth-check.js"></script>

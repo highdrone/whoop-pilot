@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Whoop Pilot</title>
+  <meta name="description" content="Voice-controlled AI pilot for a tiny FPV whoop">
+  <meta name="theme-color" content="#0b0f14">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/panels.css">
+</head>
+<body data-mode="sim" data-map="demo">
+  <header class="topbar">
+    <div class="brand">
+      <img src="icon.svg" alt="" width="26" height="26">
+      <strong>Whoop Pilot</strong>
+    </div>
+    <div class="seg" id="modeSeg" role="group" aria-label="Mode">
+      <button data-mode="sim">Simulator</button>
+      <button data-mode="real">Real drone</button>
+    </div>
+    <div class="pills">
+      <div class="pill" id="pillRadio"><i></i><span>Radio</span></div>
+      <div class="pill" id="pillVideo"><i></i><span>Video</span></div>
+      <div class="pill" id="pillBrain"><i></i><span>Brain</span></div>
+      <div class="pill" id="pillAI"><i></i><span>AI</span></div>
+    </div>
+    <button class="rec-btn" id="btnRecord" type="button" aria-pressed="false" aria-label="Record this flight" title="Record this flight" hidden><i></i><span>Record</span></button>
+    <button class="icon-btn" id="btnSettings" title="Settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <details class="ready real-only" id="ready" open>
+        <summary><span class="sum-t">Ready to fly?</span><span class="ready-state" id="readyState">Checking…</span></summary>
+        <div class="ready-body">
+          <div class="ready-group"><h3>Before you plug in the battery</h3><ul id="readyBefore"></ul>
+            <div class="row wrap"><button class="btn ghost small" id="btnPrepareReady" type="button">Prepare everything now</button>
+              <small>Downloads the vision models (about 250 MB, once), builds the 3D map and the position database: a minute or two.</small></div></div>
+          <div class="ready-group"><h3>Battery in <span id="readyTimer"></span></h3><ul id="readyBattery"></ul>
+            <p class="note">The O4 overheats after about 2.5 minutes armed on the ground, so do these last.</p></div>
+          <p class="note ready-foot">Supervised flights of about 3 minutes. The app never arms the drone: you do, with the radio. Stop, <kbd>Esc</kbd>, the AI switch or any stick takes over. <a href="setup.html#first-flight" target="_blank" class="link">First flight, step by step ↗</a></p>
+        </div>
+      </details>
+      <div class="fpv-wrap" id="mainView">
+        <canvas id="fpv" aria-label="FPV camera view"></canvas>
+        <button type="button" class="hud-changes" id="hudChanges" hidden></button>
+      </div>
+      <div class="consent" id="aiConsent" role="region" aria-label="Claude's picture checks" aria-live="polite" hidden>
+        <div class="consent-line">
+          <span class="consent-t" data-short></span>
+          <span class="consent-btns">
+            <button class="btn small" type="button" data-answer="once">Allow once</button>
+            <button class="btn ghost small" type="button" data-answer="on">Always allow</button>
+            <button class="btn ghost small" type="button" data-answer="no">Not now</button>
+          </span>
+        </div>
+        <details class="consent-more"><summary>Details</summary>
+          <p data-text></p>
+          <button class="btn ghost small" type="button" data-answer="off">Never send pictures</button>
+        </details>
+      </div>
+      <div class="cards">
+        <div class="card map-card">
+          <div class="card-h">
+            <span id="mapTitle">Apartment</span>
+            <span class="muted" id="simInfo"></span>
+            <button class="icon-btn tiny house-only" id="btnView3d" type="button" aria-pressed="false" title="3D view of the house: where the drone is, has been and will go">3D</button>
+            <button class="icon-btn tiny" id="btnSwapView" type="button" title="Swap the map and the camera view" aria-label="Swap the map and the camera view">⇄</button>
+          </div>
+          <div class="map-tools house-only" id="mapTools" role="toolbar" aria-label="Map tools">
+            <button type="button" data-tool="home" title="Set the home pad: click it on the map; drag to set the way the drone faces">Home</button>
+            <button type="button" data-tool="landmark" title="Click a place on the map and name it">Landmark</button>
+            <button type="button" data-tool="keepout" title="Click the corners of a zone the drone must never enter">No-fly</button>
+            <button type="button" data-tool="goto" title="Click where the drone should fly">Fly here</button>
+            <span class="spacer"></span>
+            <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
+            <button type="button" data-zoom="out" aria-label="Zoom out">−</button>
+            <button type="button" data-zoom="fit" title="Fit the house">Fit</button>
+          </div>
+          <div class="map-legend house-only" id="mapLegend" role="group" aria-label="Map layers">
+            <label title="Space the 3D scan never saw, at the drone's height: the drone never flies there"><input type="checkbox" data-layer="unknown"><i class="sw unknown"></i>Unknown</label>
+            <label title="What the drone's camera has seen this flight (or ever, between flights)"><input type="checkbox" data-layer="seen"><i class="sw seen"></i>Seen</label>
+            <label title="Places the scan missed: hover or click one for how to rescan it"><input type="checkbox" data-layer="gaps"><i class="sw gaps"></i>Gaps</label>
+            <label title="Where the drone flew: green sure, yellow less sure, red unsure; ✕ where it lost its position"><input type="checkbox" data-layer="trail"><i class="sw trail"></i>Flown</label>
+            <label title="The planned path and the next stops"><input type="checkbox" data-layer="route"><i class="sw route"></i>Route</label>
+            <label title="People (red), things the camera found that the scan lacks (amber), possible changes (purple pins: click to check)"><input type="checkbox" data-layer="obstacles"><i class="sw obstacles"></i>Obstacles</label>
+            <details class="map-key" id="mapKey"><summary>Key</summary>
+              <ul>
+                <li><i class="sw nofly"></i>No-fly zone (red hatching): the drone never goes in</li>
+                <li><i class="sw pad"></i>Home pad (H): missions start and end there</li>
+                <li><i class="sw drone"></i>The drone, where it thinks it is; the dashed ring is how sure</li>
+                <li class="sim-only"><i class="sw truth"></i>White outline: where the simulated drone really is</li>
+                <li><i class="sw found"></i>Found this flight (person pink, pet amber)</li>
+                <li><i class="sw people"></i>People and pets now (P, C, D in the simulator; red on the real drone)</li>
+                <li><i class="sw change"></i>Purple “?” pin: a possible change, click to check it</li>
+                <li><i class="sw gapq"></i>Cyan “?”: a place the scan missed (Gaps; click for what to do)</li>
+                <li><i class="sw lost">✕</i>Where it lost its position</li>
+              </ul>
+            </details>
+          </div>
+          <div class="map-slot" id="mapSlot">
+            <canvas id="minimap" aria-label="Map of the demo apartment"></canvas>
+            <canvas id="mapview" hidden></canvas>
+            <div class="v3d-box" id="view3dBox" hidden><canvas id="view3d" aria-label="3D view of the house"></canvas></div>
+          </div>
+          <form class="mark-form" id="markForm" hidden>
+            <input id="markName" placeholder="Name this place, e.g. cat bed" aria-label="Landmark name" spellcheck="false" required>
+            <button class="btn small" type="submit">Add</button>
+            <button class="btn ghost small" type="button" id="markCancel">Cancel</button>
+          </form>
+        </div>
+        <div class="card real-only setup-card">
+          <div class="card-h">Radio and video <a href="setup.html" target="_blank" class="link">Setup guide ↗</a></div>
+          <ul class="checks">
+            <li id="ckSerial">Radio connected over USB <small></small></li>
+            <li id="ckScript">Radio script talking <small></small></li>
+            <li id="ckVideo">Video from the goggles <small></small></li>
+            <li id="ckAngle">Quad in ANGLE mode <small></small></li>
+            <li id="ckSwitch">AI switch on <small></small></li>
+            <li id="ckBrain">Claude API key <small></small></li>
+          </ul>
+          <div class="row2"><button class="btn" id="btnRadio">Connect radio (USB)</button><button class="btn" id="btnGoggles2">Connect goggles</button></div>
+        </div>
+        <div class="card sticks-card">
+          <div class="card-h">Sticks <span class="muted">grey = pilot, yellow = to the quad</span></div>
+          <canvas id="sticks"></canvas>
+        </div>
+        <div class="card telem-card">
+          <div class="card-h">Telemetry</div>
+          <dl class="telem">
+            <dt>Battery</dt><dd id="vBatt">—</dd>
+            <dt>Link</dt><dd id="vLink">—</dd>
+            <dt>Flight mode</dt><dd id="vFm">—</dd>
+            <dt>Heading</dt><dd id="vHeading">—</dd>
+            <dt>Vel f/r/up</dt><dd id="vVel">—</dd>
+            <dt>Vision</dt><dd id="vFlow">—</dd>
+            <dt>Hover thr.</dt><dd id="vHover">—</dd>
+            <dt>Controller</dt><dd id="vStatus">—</dd>
+          </dl>
+        </div>
+        <div class="card sim-only simctl-card">
+          <div class="card-h">Simulator</div>
+          <div class="seg wide compact" id="simWorldSeg" role="group" aria-label="Simulator world">
+            <button type="button" data-world="demo">Demo apartment</button>
+            <button type="button" data-world="house" title="Fly in your own house: needs a house in Settings → House">My house</button>
+          </div>
+          <div class="sim-buttons">
+            <button class="toggle" id="simArm" title="E">Arm <kbd>E</kbd></button>
+            <button class="toggle" id="simAi" title="Q">AI switch <kbd>Q</kbd></button>
+            <button class="toggle" id="simAssist" title="Simulated human holds altitude (co-pilot) and stops the drift between commands">Pilot holds height</button>
+            <button class="toggle house-sim-only" id="simActors" title="People, a cat and a dog walking around your house">People &amp; pets</button>
+            <button class="toggle house-sim-only" id="simRehearse" title="Fly the simulator like the real drone: position from its own camera (with the O4's blur, noise and a lens error), live depth and the person detector on, and missions start only when the real drone would">Rehearse the real flight</button>
+            <button class="btn ghost" id="simReset">Reset <kbd>R</kbd></button>
+          </div>
+          <p class="hint">By hand: <kbd>W</kbd><kbd>S</kbd> throttle, <kbd>A</kbd><kbd>D</kbd> yaw, arrows pitch/roll. Moving a stick while the AI flies takes over, as on the real radio.</p>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="seg wide" id="autonomySeg" role="group" aria-label="Autonomy">
+        <button data-autonomy="observer" title="The AI watches and talks but never moves the drone.">Observer</button>
+        <button data-autonomy="copilot" title="You hold height with the throttle; the AI steers.">Co-pilot</button>
+        <button data-autonomy="full" title="The AI flies everything, including take-off and landing. Experimental.">Full auto</button>
+      </div>
+      <details class="missions" id="missions" open>
+        <summary><span class="sum-t">Missions</span><span class="mission-state" id="missionState">Idle</span></summary>
+        <div class="mission-body">
+          <p class="note" id="missionNote"></p>
+          <div class="row">
+            <select id="missionTarget" aria-label="Room or place"></select>
+            <button class="btn small" type="button" data-mission="goTo">Go to</button>
+            <button class="btn small" type="button" data-mission="lookIn">Look in</button>
+          </div>
+          <div class="mission-grid">
+            <button class="btn small" type="button" data-mission="people">Find people</button>
+            <button class="btn small" type="button" data-mission="pets">Check on pets</button>
+            <button class="btn small" type="button" data-mission="patrol">Patrol</button>
+            <button class="btn small" type="button" data-mission="home">Return home</button>
+            <button class="btn small danger" type="button" id="btnMissionStop">Stop</button>
+          </div>
+          <div class="budget" id="missionBudget" aria-live="polite"></div>
+          <p class="note" id="missionWhy" hidden></p>
+          <button class="btn ghost small" type="button" id="btnOnPad" title="Tell the app where the drone is: on its home pad, facing the way the pad points" hidden>The drone is on its home pad</button>
+        </div>
+      </details>
+      <div class="side-tabs" role="tablist" aria-label="Log">
+        <button type="button" role="tab" id="tabLogBtn" aria-selected="true" aria-controls="log">Mission log</button>
+        <button type="button" role="tab" id="tabEventsBtn" aria-selected="false" aria-controls="events">Events <span class="count" id="eventCount"></span></button>
+        <button type="button" role="tab" id="tabHistoryBtn" aria-selected="false" aria-controls="history">History</button>
+        <span class="brain-state" id="brainState"></span>
+      </div>
+      <div class="log" id="log" role="tabpanel" aria-labelledby="tabLogBtn" aria-live="polite"></div>
+      <div class="events" id="events" role="tabpanel" aria-labelledby="tabEventsBtn" hidden></div>
+      <div class="history" id="history" role="tabpanel" aria-labelledby="tabHistoryBtn" hidden></div>
+      <div class="chips">
+        <button class="chip" data-cmd="Take off">Take off</button>
+        <button class="chip" data-cmd="Find the cat">Find the cat</button>
+        <button class="chip" data-cmd="Follow the cat">Follow the cat</button>
+        <button class="chip" data-cmd="Go to the kitchen">Go to the kitchen</button>
+        <button class="chip" data-cmd="Look around and tell me what you see">Look around</button>
+      </div>
+      <form class="cmd" id="cmdForm" autocomplete="off">
+        <button type="button" class="mic" id="btnMic" title="Hold to talk (or hold Space)" aria-label="Hold to talk">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 19v3"/></svg>
+        </button>
+        <input id="cmd" placeholder="Say or type a command…" aria-label="Command">
+        <button type="submit" class="send" aria-label="Send">Go</button>
+      </form>
+      <div class="actions">
+        <button class="btn danger" id="btnStop">Stop <kbd>Esc</kbd></button>
+        <button class="btn" id="btnLand">Land <kbd>L</kbd></button>
+      </div>
+      <p class="hint center">Hold <kbd>Space</kbd> to talk. Your radio's AI switch always wins.</p>
+    </aside>
+  </main>
+
+  <dialog id="settings" aria-labelledby="settingsTitle">
+    <div class="dlg-h">
+      <strong id="settingsTitle">Settings</strong>
+      <button class="icon-btn" id="btnCloseSettings" aria-label="Close">✕</button>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Settings">
+      <button role="tab" class="on" aria-selected="true" data-tab="tabBrain">Brain</button>
+      <button role="tab" aria-selected="false" data-tab="tabHouse">House</button>
+      <button role="tab" aria-selected="false" data-tab="tabFlight">Flight</button>
+      <button role="tab" aria-selected="false" data-tab="tabVideo">Camera</button>
+      <button role="tab" aria-selected="false" data-tab="tabVoice">Voice</button>
+      <button role="tab" aria-selected="false" data-tab="tabAlerts">Alerts</button>
+      <button role="tab" aria-selected="false" data-tab="tabMemory">Memory</button>
+      <button role="tab" aria-selected="false" data-tab="tabRecordings">Recordings</button>
+      <button role="tab" aria-selected="false" data-tab="tabHome">Notes</button>
+    </nav>
+    <section class="tab" id="tabBrain" role="tabpanel">
+      <label>Claude API key
+        <div class="row"><input id="setKey" type="password" placeholder="sk-ant-..." spellcheck="false"><button class="btn ghost" id="btnKeyShow" type="button">Show</button></div>
+        <small>Get one at console.anthropic.com. It's stored only in this browser on this Mac and sent only to api.anthropic.com. Without a key, a simple offline brain handles basic commands.</small>
+      </label>
+      <label>Model
+        <input id="setModel" list="models" spellcheck="false">
+        <datalist id="models"><option value="claude-opus-5"><option value="claude-opus-5-5"><option value="claude-sonnet-5"><option value="claude-haiku-4-5"></datalist>
+        <small>claude-opus-5 is the default. Smaller models answer faster and cost less; that trade-off is yours.</small>
+      </label>
+      <label>Thinking effort
+        <select id="setEffort"><option value="low">Low (fastest)</option><option value="medium">Medium</option><option value="high">High</option></select>
+      </label>
+      <div class="label">Claude's picture checks (the house survey, changes the drone notices, uncertain person or pet alerts)</div>
+      <div class="grid2">
+        <label>Send pictures of the house to Claude
+          <select id="setAiVision"><option value="ask">Ask me first</option><option value="on">Yes</option><option value="off">Never</option></select>
+        </label>
+        <label>Budget per flight (US$)<input id="setAiBudget" type="number" min="0" max="20" step="0.05"></label>
+      </div>
+      <label>Model for picture checks<input id="setAiModel" list="models" spellcheck="false" placeholder="Same as above"></label>
+      <small>The pictures are small views from the drone camera and renders of your 3D scan. They go to Anthropic's Claude API with your key, and checks stop at the budget. Voice commands always send the current camera view. The survey shows its own estimate and asks first.</small>
+      <p class="note" id="aiCosts" aria-live="polite">No Claude calls yet this session.</p>
+    </section>
+    <section class="tab" id="tabHouse" role="tabpanel" hidden>
+      <details class="help first-flight" id="firstFlight">
+        <summary>First flight, step by step</summary>
+        <ol class="steps">
+          <li><b>Import the capture</b> of your house (below).</li>
+          <li><b>Build the 3D map and read the coverage</b>: it lists the places the scan missed and how to rescan them. The drone never flies through space the scan didn't see.</li>
+          <li><b>Optional: ask Claude to survey the house</b>: room names, landmarks and hazards like ceiling fans, shown with their cost before anything is sent.</li>
+          <li><b>Set the home pad</b> with the map's Home tool and tape the printed mat there, its arrow the way the drone faces; keep 0.5 m around it clear.</li>
+          <li><b>Rehearse in the simulator</b>: My house → Rehearse the real flight, then Look in a room and Return home.</li>
+          <li><b>Prepare before the battery goes in</b>: Real drone → Ready to fly? → Prepare everything now (the models and the position database).</li>
+          <li><b>Record a pad turn and a short flight by hand</b>: Record, battery in, “The drone is on its home pad”, one slow full turn by hand on the pad, a minute's hover flown by hand, land on the pad, stop Record. Be quick: the O4 overheats after about 2.5 minutes on the ground.</li>
+          <li><b>Calibrate the camera from that recording</b>: Settings → House → Camera calibration → From a recorded flight → Calibrate from it, then Save it.</li>
+          <li><b>Check localization on that recording</b>: Settings → Recordings → Check localization; go on only when it passes.</li>
+          <li><b>Pad check</b> with the next battery: press “The drone is on its home pad”; the camera must match the 3D scan there.</li>
+          <li><b>Measure braking</b> in Full auto, in your largest open room (Settings → Flight); if it says there isn't room, missions stay at 0.3 m/s.</li>
+          <li><b>First mission in Co-pilot</b>: “Look in” one room, you hold the height, thumbs on the sticks. Full auto only after two good Co-pilot flights.</li>
+        </ol>
+        <p class="note">Flights are supervised and about 3 minutes long. The app never arms the drone. Keep this window visible while it flies.</p>
+      </details>
+      <details class="help">
+        <summary>What to capture, and why it matters</summary>
+        <p>Whoop Pilot flies your house from a SiteSpec (or Spacial) capture: the 3D scan becomes its map and its simulator, and Claude learns the rooms' names.</p>
+        <ul>
+          <li><b>Walk every room the drone may fly in</b>, slowly, with the doorways between them. Include ceiling fans and stairs: the map keeps the drone away from them.</li>
+          <li><b>Leave the AprilTags up.</b> Tag 0 on the floor is where the drone takes off and lands (its home pad), and the tags give the scan its true size. Later they let the drone check where it is.</li>
+          <li><b>Do the tape checks in SiteSpec</b>: measure two or three long distances, wall to wall. The drone keeps about 30 cm from walls, and a scan that is 1% off is already 6 cm off across a 6 m room.</li>
+          <li>Let SiteSpec finish the project (it draws the floor plan with rooms and doors), then use it here. Re-capture after moving big furniture.</li>
+        </ul>
+      </details>
+      <div>
+        <div class="label">Your captures</div>
+        <div class="captures" id="captureList"><p class="note">Looking for captures…</p></div>
+        <div class="row wrap">
+          <button class="btn ghost" id="btnPickFolder" type="button">Choose a folder…</button>
+          <small>A capture folder somewhere else, such as a project folder copied from another Mac. Pick the project folder, not its outputs folder.</small>
+        </div>
+      </div>
+      <div class="import" id="importBox" hidden aria-live="polite">
+        <p id="importText"></p>
+        <progress id="importBar" max="1"></progress>
+        <ul id="importWarnings"></ul>
+      </div>
+      <div>
+        <div class="label">Houses in this browser</div>
+        <div id="houseList"></div>
+      </div>
+      <div class="house-only-block" id="houseTools">
+        <div class="label">3D map and coverage</div>
+        <div class="row wrap"><button class="btn ghost" id="btnRebuild3d" type="button">Build the 3D map again</button><small id="map3dState" aria-live="polite"></small></div>
+        <div class="panel-host" id="coverage"></div>
+        <div class="label">Claude's survey of the house</div>
+        <div class="panel-host" id="survey"></div>
+        <div class="label">Camera calibration and the position database</div>
+        <div class="row wrap"><button class="btn ghost" id="btnBuildDb" type="button">Build the position database</button><small id="dbState" aria-live="polite"></small></div>
+        <div class="row wrap"><button class="btn ghost" id="btnPrepare" type="button">Prepare for the flight (before the battery)</button>
+          <small>The vision models (about 250 MB, once), the 3D map and the position database, in one go: a minute or two the first time, seconds after.</small></div>
+        <div class="panel-host" id="calib"></div>
+      </div>
+    </section>
+    <section class="tab" id="tabFlight" role="tabpanel" hidden>
+      <div class="grid2">
+        <label>Cruise speed (m/s, estimated)<input id="setSpeed" type="number" min="0.15" max="0.8" step="0.05"></label>
+        <label>Max tilt (stick fraction)<input id="setTilt" type="number" min="0.1" max="0.5" step="0.05"></label>
+        <label>Max turn rate (°/s)<input id="setYawRate" type="number" min="30" max="250" step="10"></label>
+        <label>Betaflight angle limit (°)<input id="setAngle" type="number" min="20" max="85" step="1"></label>
+        <label>Yaw rate center (°/s)<input id="setYawCenter" type="number" min="10" max="400" step="5"><small>Betaflight “Actual” rates</small></label>
+        <label>Yaw rate max (°/s)<input id="setYawMax" type="number" min="100" max="1800" step="10"></label>
+      </div>
+      <button class="btn ghost" id="btnResetHover" type="button">Reset hover-throttle calibration</button>
+      <label class="check"><input id="setAvoid" type="checkbox"> Avoid things the 3D scan doesn't have (live depth; downloads a 100 MB model once)</label>
+      <small>The 3D scan's walls and furniture are always avoided, and so is unknown space once the 3D map is built. Without live depth or the 3D map, the real drone flies slowly (0.22 m/s) and says why.</small>
+      <label class="check"><input id="setLocVision" type="checkbox"> Real drone: know its position from its camera (matched against the 3D scan)</label>
+      <div class="row wrap"><button class="btn ghost" id="btnBrake" type="button">Measure braking</button><small id="brakeState"></small></div>
+      <small>Full auto, hovering in your largest open room: a short run and a stop. Until then the real drone flies at most 0.3 m/s.</small>
+      <div class="label">Simulator</div>
+      <div class="grid2">
+        <label>Position from
+          <select id="setSimLoc"><option value="truth">The simulator's truth (exact)</option><option value="vision">Its own camera (vision localization)</option></select>
+        </label>
+        <label class="check"><input id="setSimAugment" type="checkbox"> Make the camera look like the O4's (blur, noise, compression, on-screen text, lens error)</label>
+      </div>
+      <label class="check"><input id="setRehearse" type="checkbox"> Rehearse the real flight: both of the above, live depth and the person detector on, and missions start only when the real drone would</label>
+    </section>
+    <section class="tab" id="tabVideo" role="tabpanel" hidden>
+      <div>
+        <div class="label">DJI Goggles 3 (recommended)</div>
+        <div class="row wrap"><button class="btn" id="btnGoggles" type="button">Connect goggles</button><button class="btn ghost" id="btnGogglesUsb" type="button" title="Chrome can't claim Goggles 3 itself (their USB network interface is a class WebUSB protects). This is for other goggles or firmware that expose it differently.">Try direct USB (other goggles/firmware)</button></div>
+        <small id="gogglesStatus">Not connected</small>
+        <small>Whoop Pilot's server does the USB part outside Chrome: double-click <code>start.command</code> and keep its window open; it needs Node.js (<code>brew install node</code>). Plug the goggles into the Mac with a USB-C data cable (goggles on, Settings → About → OTG Wired Connection off, Share Liveview to Mobile Device via Wi-Fi on) and power the drone; the app connects by itself. Over the goggles' Wi-Fi instead: join their network and start it with <code>./start.command --wifi</code>. <a href="setup.html#video" target="_blank" class="link">Details ↗</a></small>
+      </div>
+      <div>
+        <div class="label">Or capture a window</div>
+        <div class="row wrap"><button class="btn ghost" id="btnScreen" type="button">Capture a window…</button><button class="btn ghost" id="btnCrop" type="button">Crop to video</button><button class="btn ghost" id="btnCropReset" type="button">Reset crop</button></div>
+        <small>Any window showing the drone's view (e.g. iPhone Mirroring with DJI Fly). Crop to just the camera picture.</small>
+      </div>
+      <label>Or a USB video device
+        <div class="row"><select id="setCamera"></select><button class="btn ghost" id="btnCamRefresh" type="button">Refresh</button></div>
+        <small>HDMI/AV capture sticks and analog 5.8 GHz USB receivers show up here like a webcam.</small>
+      </label>
+      <div class="grid2">
+        <label>Video delay (ms)<input id="setDelay" type="number" min="0" max="1000" step="10"><small>Camera-to-screen lag. Goggles 3 through the server: about 90 (set automatically). Window capture (iPhone Mirroring): about 150–300. The simulator adds the same delay.</small></label>
+        <label>Horizontal field of view (°)<input id="setHfov" type="number" min="60" max="190" step="1"><small>O4 lens: 127 (a 159° diagonal fisheye at 4:3).</small></label>
+        <label>Camera uptilt (°)<input id="setUptilt" type="number" min="15" max="35" step="1"><small>The Meteor65 Pro II's mount: 15–35°.</small></label>
+      </div>
+      <div class="grid2">
+        <label>Object detector
+          <select id="setDetector"><option value="rfdetr">RF-DETR (WebGPU, best)</option><option value="mediapipe">MediaPipe (lighter, needs internet)</option></select>
+          <small>RF-DETR downloads once (about 110 MB) and then works offline. Without WebGPU it switches to MediaPipe by itself and says so in the log.</small>
+        </label>
+        <label>Detector quality
+          <select id="setDetectorQuality"><option value="fast">Fast</option><option value="accurate">Accurate (slower, larger)</option></select>
+        </label>
+        <label>Simulator boxes
+          <select id="setSimDetections"><option value="truth">Ground truth (exact)</option><option value="detector">Run the detector on the simulator's pictures</option></select>
+        </label>
+      </div>
+    </section>
+    <section class="tab" id="tabVoice" role="tabpanel" hidden>
+      <label class="check"><input id="setSpeak" type="checkbox"> Speak replies out loud</label>
+      <label>Voice<select id="setVoice"></select></label>
+      <label class="check"><input id="setHandsFree" type="checkbox"> Hands-free: always listening for the wake word</label>
+      <label>Wake word<input id="setWake" spellcheck="false"><small>Say it first, e.g. “drone, find the cat”. A bare “stop” always works.</small></label>
+    </section>
+    <section class="tab" id="tabAlerts" role="tabpanel" hidden>
+      <div>
+        <div class="label">Mac notifications</div>
+        <div class="row wrap"><button class="btn" id="btnNotifyPerm" type="button">Allow notifications</button><small id="notifyPermState"></small></div>
+        <small>Missions say what they find out loud, show it in Events with a picture, and put up a notification so you see it in another app.</small>
+      </div>
+      <label>Phone alerts through ntfy (optional)
+        <div class="row"><input id="setNtfy" placeholder="Topic, e.g. whoop-…" spellcheck="false" autocomplete="off"><button class="btn ghost" id="btnNtfyNew" type="button">New private topic</button></div>
+        <small>Install the free ntfy app on your phone and subscribe to this topic. Anyone who knows the topic can read the alerts and their pictures, so keep it long and random. Empty: no phone alerts.</small>
+      </label>
+      <div class="row"><button class="btn ghost" id="btnTestAlert" type="button">Send a test alert</button></div>
+      <p class="note">Guarding is supervised: someone puts the battery in and arms the drone (the app never arms it), a sortie lasts about 3 minutes, and this Mac, the radio and the goggles stay on with this window visible.</p>
+    </section>
+    <section class="tab" id="tabMemory" role="tabpanel" hidden>
+      <small>The flight memory keeps every flight's path, what the drone saw (with pictures, people included) and the changes it noticed, in this browser only. Claude reads it to answer “where did you last see the cat?”. History (next to Events) shows it.</small>
+      <div class="grid2">
+        <label>Keep flights for (days)<input id="setMemoryDays" type="number" min="1" max="3650" step="1"></label>
+        <label>Keep at most (flights)<input id="setMemoryFlights" type="number" min="10" max="5000" step="10"></label>
+      </div>
+      <small>New limits apply as soon as you enter them: a shorter one deletes older flights (with their pictures) at once.</small>
+      <p class="note" id="memoryState" aria-live="polite"></p>
+      <div class="row wrap"><button class="btn ghost danger-text" id="btnForgetPictures" type="button">Delete the pictures only</button>
+        <button class="btn ghost danger-text" id="btnForget" type="button">Delete this house's flight memory</button></div>
+    </section>
+    <section class="tab" id="tabRecordings" role="tabpanel" hidden>
+      <small>Record flight (at the top) keeps a flight's goggles video, telemetry and commands on this Mac, for checking the lens and the position estimate later. A recording stops by itself after 20 minutes, at 2 GB, when the disk is nearly full, or when this page goes quiet for 2 minutes.</small>
+      <div id="recList"><p class="note">Looking for recordings…</p></div>
+      <div class="panel-host" id="recheck"></div>
+    </section>
+    <section class="tab" id="tabHome" role="tabpanel" hidden>
+      <label>Notes about your home (Claude reads these with every command and can add to them)
+        <textarea id="setNotes" rows="9" placeholder="- The kitchen is through the wide opening left of the TV.&#10;- The cat likes to sleep on the bed."></textarea>
+      </label>
+    </section>
+  </dialog>
+
+  <dialog id="snapDialog" class="snap-dlg" aria-label="Snapshot">
+    <div class="dlg-h"><strong>Snapshot</strong><button class="icon-btn" type="button" data-close aria-label="Close">✕</button></div>
+    <img alt="What the drone saw">
+    <p></p>
+  </dialog>
+
+  <div class="change-card" id="changeCard" role="dialog" aria-modal="false" aria-label="A possible change from the 3D scan" hidden>
+    <div id="changeCardBody"></div>
+  </div>
+
+  <dialog id="surveyDialog" aria-labelledby="surveyDialogTitle">
+    <div class="dlg-h"><strong id="surveyDialogTitle">Ask Claude to survey the house?</strong></div>
+    <div class="tab">
+      <p id="surveyDialogText"></p>
+      <p class="note">Pictures of your 3D scan (not the drone camera) go to Anthropic's Claude API with your key. Nothing is put on the map until you accept it.</p>
+      <div class="row"><button class="btn" type="button" id="surveyYes">Survey now</button><button class="btn ghost" type="button" id="surveyNo">Not now</button></div>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

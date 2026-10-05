@@ -1,0 +1,121 @@
+{
+ "version": 1,
+ "rooms": {
+  "r1": {
+   "room_id": "r1",
+   "name": "Living room",
+   "room_type": "sunken living room",
+   "summary": "Sunken living room (0.25 m down) with a sloped textured ceiling, brick fireplace wall, patio windows and glass door, and an arched opening with a step up to the slate-floored entry.",
+   "fixtures": [
+    {
+     "kind": "ceiling_fan",
+     "label": "Ceiling fan with light",
+     "panorama": 1,
+     "x": 3.722,
+     "y": 2.923,
+     "height": 3.15,
+     "surface": "ceiling"
+    },
+    {
+     "kind": "fireplace",
+     "label": "Brick fireplace with wood stove insert",
+     "panorama": 1,
+     "x": 3.131,
+     "y": 5.877,
+     "height": 1.93,
+     "surface": "w4"
+    },
+    {
+     "kind": "column",
+     "label": "Left arch column",
+     "panorama": 1,
+     "x": -0.376,
+     "y": -0.152,
+     "height": 2.4,
+     "surface": "w11"
+    },
+    {
+     "kind": "column",
+     "label": "Right arch column",
+     "panorama": 1,
+     "x": -0.155,
+     "y": 6.001,
+     "height": 2.8,
+     "surface": "ceiling"
+    },
+    {
+     "kind": "beam",
+     "label": "Arched header between living room and entry",
+     "panorama": 1,
+     "x": 0.399,
+     "y": 2.999,
+     "height": 3.14,
+     "surface": "ceiling"
+    },
+    {
+     "kind": "steps",
+     "label": "Step up to entry",
+     "panorama": 1,
+     "x": -1.844,
+     "y": 1.975,
+     "height": 0.29,
+     "surface": "p3"
+    },
+    {
+     "kind": "stairs",
+     "label": "Stair down from entry with railing",
+     "panorama": 1,
+     "x": -1.881,
+     "y": 5.634,
+     "height": 1.98,
+     "surface": "p3"
+    },
+    {
+     "kind": "light_fixture",
+     "label": "Entry ceiling light",
+     "panorama": 1,
+     "x": -1.197,
+     "y": 2.904,
+     "height": 2.76,
+     "surface": "ceiling"
+    },
+    {
+     "kind": "window_treatment",
+     "label": "Floral curtains on patio windows",
+     "panorama": 1,
+     "x": 4.807,
+     "y": 2.778,
+     "height": 2.86,
+     "surface": "ceiling"
+    },
+    {
+     "kind": "window_treatment",
+     "label": "Cellular shades on entry windows",
+     "panorama": 1,
+     "x": -1.865,
+     "y": 4.028,
+     "height": 2.69,
+     "surface": "p3"
+    },
+    {
+     "kind": "other",
+     "label": "Small wall rectangle, possibly in-wall speaker or vent",
+     "panorama": 2,
+     "x": 3.439,
+     "y": -0.113,
+     "height": 2.34,
+     "surface": "w11"
+    },
+    {
+     "kind": "other",
+     "label": "Small white wall device (thermostat or sensor?)",
+     "panorama": 1,
+     "x": 1.068,
+     "y": -0.137,
+     "height": 3.08,
+     "surface": "w11"
+    }
+   ]
+  }
+ }
+}

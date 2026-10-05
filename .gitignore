@@ -1,0 +1,38 @@
+# Credentials / private configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*credentials*
+*token-cache*
+# Local captures, recordings, exports and device settings
+captures/
+recordings/
+scans/
+exports/
+private/
+radio/backup*/
+*.ply
+*.splat
+*.spz
+*.obj
+*.glb
+*.gltf
+*.h264
+*.mp4
+*.mov
+*.webm
+*.jsonl
+*.pcap
+*.pcapng
+# Dependencies / tools / OS state
+node_modules/
+.venv*/
+__pycache__/
+*.pyc
+.DS_Store
+*.log
+coverage/
+playwright-report/
+test-results/
