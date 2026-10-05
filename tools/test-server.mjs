@@ -493,7 +493,9 @@ const tests = {
       assert.equal(code, 1, `${host ?? "*"}: ${r.out}`);
       assert.match(r.out, check(port));
     };
-    const other = (port) => new RegExp(`Port ${port} is used by node \\(process ${process.pid}\\).*can't use another port`);
+    // Linux lsof can label Node 26's main thread node-MainThread; macOS reports node.
+    // Keep the exact port/PID checks while accepting that diagnostic-only suffix.
+    const other = (port) => new RegExp(`Port ${port} is used by node(?:-MainThread)? \\(process ${process.pid}\\).*can't use another port`);
     await taken((q, res) => res.end("hello"), other);
     await taken((q, res) => res.end("hello"), other, undefined); // *:port (dual stack): macOS would let 127.0.0.1 bind on top
     await taken((q, res) => res.end("hello"), other, "0.0.0.0");
