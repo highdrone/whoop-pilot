@@ -938,7 +938,21 @@ function drawSticks() {
 let lastT = performance.now();
 let lastRender = 0;
 let lastFrameRect = { fx: 0, fy: 0, fw: 1, fh: 1 };
-const frame = (now) => (step(now), requestAnimationFrame(frame));
+// A frame that throws must not stop the loop (the simulator, the views and the recorder live in it): log each distinct
+// error once and carry on.
+const frameErrors = new Set();
+function frame(now) {
+  requestAnimationFrame(frame);
+  try {
+    step(now);
+  } catch (e) {
+    const key = `${e?.message}`.slice(0, 200);
+    if (frameErrors.has(key)) return;
+    frameErrors.add(key);
+    console.error(e);
+    log("error", `Something went wrong drawing the screen (${key}). The app keeps running.`);
+  }
+}
 // One frame of the page: the simulator, perception, the views (a check in a hidden page calls it from a timer).
 function step(now) {
   const dt = Math.max(0, (now - lastT) / 1000);

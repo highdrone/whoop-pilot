@@ -275,6 +275,7 @@ export function drawMinimap(canvas, sim) {
   const world = sim.world;
   const pad = 10 * dpr;
   const sc = Math.min((cw - 2 * pad) / 10, (ch - 2 * pad) / 8);
+  if (!(sc > 0)) return; // not laid out yet, or hidden
   const ox = (cw - 10 * sc) / 2;
   const oy = (ch - 8 * sc) / 2;
   const X = (x) => ox + x * sc;

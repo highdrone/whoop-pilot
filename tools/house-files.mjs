@@ -1,5 +1,5 @@
-// Read-only access to the user's SiteSpec and Spacial captures, so the app can import the newest one
-// without a folder picker. Only files inside a project folder of one of the roots are reachable: names
+// Read-only access to the user's SpaceBunny (formerly SiteSpec) and Spacial captures, and the captures/ folder next to
+// the app, so the app can import the newest one without a folder picker. Only files inside a project folder of one of the roots are reachable: names
 // are checked segment by segment (no "..", no dotfiles) and the real path, symlinks resolved, must stay
 // inside the project's real folder.
 import fs from "node:fs/promises";
@@ -7,8 +7,10 @@ import os from "node:os";
 import path from "node:path";
 
 export const HOUSE_ROOTS = [
-  { kind: "sitespec", dir: path.join(os.homedir(), "SiteSpec Projects") },
-  { kind: "spacial", dir: path.join(os.homedir(), "Spacial Projects") },
+  { kind: "sitespec", app: "SpaceBunny", dir: path.join(os.homedir(), "SpaceBunny Projects") }, // SiteSpec's new name, same format
+  { kind: "sitespec", app: "SiteSpec", dir: path.join(os.homedir(), "SiteSpec Projects") },
+  { kind: "spacial", app: "Spacial", dir: path.join(os.homedir(), "Spacial Projects") },
+  { kind: "sitespec", app: "Whoop Pilot", dir: path.join(import.meta.dirname, "..", "captures") },
 ];
 
 const SPLATS = ["outputs/splat.spz", "outputs/splat.splat", "outputs/splat.ply"];
@@ -23,13 +25,13 @@ export class HouseFiles {
     this.roots = roots;
   }
 
-  // The project folder's real path, or null. SiteSpec first when both roots have the name.
+  // The project folder's real path, or null. The first root that has the name wins.
   async project(id) {
     if (!okName(id)) return null;
-    for (const { kind, dir } of this.roots) {
+    for (const { kind, app, dir } of this.roots) {
       const root = await real(dir);
       const p = root && (await real(path.join(root, id)));
-      if (p && inside(root, p) && p !== root && (await stat(p))?.isDirectory()) return { id, kind, dir: p };
+      if (p && inside(root, p) && p !== root && (await stat(p))?.isDirectory()) return { id, kind, app: app ?? (kind === "spacial" ? "Spacial" : "SiteSpec"), dir: p };
     }
     return null;
   }
@@ -58,7 +60,7 @@ export class HouseFiles {
     return out.sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  async describe({ id, kind, dir }) {
+  async describe({ id, kind, app, dir }) {
     const has = async (rel) => ((await stat(path.join(dir, rel)))?.isFile() ? rel : null);
     const project = await fs.readFile(path.join(dir, "project.json"), "utf8").then(JSON.parse).catch(() => ({}));
     const plans = await fs.readdir(path.join(dir, "outputs/plans")).catch(() => []);
@@ -90,6 +92,7 @@ export class HouseFiles {
       id,
       name: typeof project.name === "string" ? project.name : id,
       kind,
+      app,
       date: date.toISOString(),
       splat,
       thumbnail: files.thumbnail && url(id, files.thumbnail),
@@ -99,7 +102,7 @@ export class HouseFiles {
     };
   }
 
-  // Every project in both roots, newest first.
+  // Every project in every root, newest first.
   async list() {
     const out = [];
     const seen = new Set();

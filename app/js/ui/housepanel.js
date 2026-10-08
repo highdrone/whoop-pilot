@@ -95,12 +95,13 @@ export class HousePanel extends Emitter {
     const box = this.captures;
     const session = await this.app.session();
     if (!session) {
-      box.replaceChildren(h("p", { class: "note" }, "Start Whoop Pilot with start.command (it needs Node.js) to see your SiteSpec and Spacial captures here, or choose a capture folder below."));
+      box.replaceChildren(h("p", { class: "note" }, "Start Whoop Pilot with start.command (it needs Node.js) to see your SpaceBunny and Spacial captures here, or choose a capture folder below."));
       return;
     }
     const projects = await fetch("/house-files/").then((r) => r.json()).then((j) => j.projects ?? [], () => null);
     if (!projects?.length) {
-      box.replaceChildren(h("p", { class: "note" }, projects ? "No captures found in your SiteSpec Projects or Spacial Projects folders yet." : "Couldn't list your captures."));
+      const none = "No captures yet in your SpaceBunny, SiteSpec or Spacial Projects folders or Whoop Pilot's captures folder.";
+      box.replaceChildren(h("p", { class: "note" }, projects ? none : "Couldn't list your captures."));
       return;
     }
     const stored = new Set((await this.stored()).map((x) => x.name));
@@ -108,9 +109,9 @@ export class HousePanel extends Emitter {
       p.thumbnail ? h("img", { src: p.thumbnail, alt: "", loading: "lazy", width: 72, height: 54 }) : h("div", { class: "thumb" }),
       h("div", { class: "meta" },
         h("strong", {}, p.name),
-        h("small", {}, [fmtDate(p.date), p.splat ? `3D scan ${fmtBytes(p.splat.size)}` : "no 3D scan yet", p.kind === "spacial" ? "Spacial" : "SiteSpec"].join(" · ")),
+        h("small", {}, [fmtDate(p.date), p.splat ? `3D scan ${fmtBytes(p.splat.size)}` : "no 3D scan yet", p.app ?? (p.kind === "spacial" ? "Spacial" : "SiteSpec")].join(" · ")),
         stored.has(p.name) && h("small", { class: "badge" }, "In this browser"),
-        !p.ready && h("small", { class: "warn-text" }, "Not finished: open it in SiteSpec until it has a 3D scan."),
+        !p.ready && h("small", { class: "warn-text" }, `Not finished: open it in ${p.app === "Spacial" ? "Spacial" : "SpaceBunny"} until it has a 3D scan.`),
       ),
       h("button", { type: "button", class: "btn", disabled: !p.ready || this.busy, onclick: () => this.importFrom(houseSource(p, (e) => this.progress(e)), p.name, p.splat?.size) },
         stored.has(p.name) ? "Import again" : "Use this capture"),
